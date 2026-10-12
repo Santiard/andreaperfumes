@@ -13,7 +13,7 @@ ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`), `email` = VALUES(`email`);
 
 -- 2. Configuración de Contacto WhatsApp (Compra Asistida Cúcuta y Envíos Nacionales)
 INSERT INTO `configuracion_contacto` (`id`, `numero_whatsapp`, `mensaje_plantilla`, `activo`) VALUES
-(1, '573000000000', '¡Hola *DREA PERFUMES*! ✨\nMe interesa realizar el siguiente pedido desde el catálogo web:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad en Cúcuta / envío nacional y medios de pago? ¡Gracias!', TRUE)
+(1, '573207683734', '¡Hola *DREA PERFUMES*! ✨\nMe interesa realizar el siguiente pedido desde el catálogo web:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad en Cúcuta / envío nacional y medios de pago? ¡Gracias!', TRUE)
 ON DUPLICATE KEY UPDATE `numero_whatsapp` = VALUES(`numero_whatsapp`), `mensaje_plantilla` = VALUES(`mensaje_plantilla`);
 
 -- 3. Marcas Base

@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `variantes_producto` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `producto_id` INT UNSIGNED NOT NULL,
     `tamano_ml` INT UNSIGNED NOT NULL COMMENT 'Ej. 5, 10, 50, 100, 200',
-    `tipo_presentacion` ENUM('Regular', 'Tester', 'Decant') NOT NULL DEFAULT 'Regular',
+    `tipo_presentacion` ENUM('Regular', 'Tester', 'Decant', 'Kit') NOT NULL DEFAULT 'Regular',
     `sku` VARCHAR(50) NULL,
     `precio_base` DECIMAL(12, 2) NOT NULL,
     `disponible` BOOLEAN NOT NULL DEFAULT TRUE,

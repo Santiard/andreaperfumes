@@ -57,6 +57,29 @@ final class CatalogoRepository
             ORDER BY no.nombre ASC
         ')->fetchAll();
 
+        $tamanos = $this->db->query('
+            SELECT vp.tamano_ml, COUNT(DISTINCT vp.producto_id) AS total_productos
+            FROM variantes_producto vp
+            INNER JOIN productos p ON p.id = vp.producto_id
+            WHERE vp.disponible = 1 AND p.activo = 1
+            GROUP BY vp.tamano_ml
+            ORDER BY vp.tamano_ml ASC
+        ')->fetchAll();
+
+        $generosConteo = $this->db->query('
+            SELECT p.genero, COUNT(p.id) AS total_productos
+            FROM productos p
+            WHERE p.activo = 1
+            GROUP BY p.genero
+        ')->fetchAll();
+
+        $concentracionesConteo = $this->db->query('
+            SELECT p.concentracion, COUNT(p.id) AS total_productos
+            FROM productos p
+            WHERE p.activo = 1
+            GROUP BY p.concentracion
+        ')->fetchAll();
+
         $rangoPrecios = $this->db->query('
             SELECT
                 COALESCE(MIN(vp.precio_base), 0) AS precio_min,
@@ -70,14 +93,17 @@ final class CatalogoRepository
         $max = (float) ($rangoPrecios['precio_max'] ?? 0);
 
         return [
-            'marcas'               => $marcas,
-            'familias_olfativas'   => $familias,
-            'notas_olfativas'      => $notas,
-            'generos'              => PerfumeEnums::GENEROS,
-            'concentraciones'      => PerfumeEnums::CONCENTRACIONES,
-            'tipos_presentacion'   => PerfumeEnums::TIPOS_PRESENTACION,
-            'etapas_piramide'      => PerfumeEnums::ETAPAS_PIRAMIDE,
-            'rango_precios'        => [
+            'marcas'                  => $marcas,
+            'familias_olfativas'      => $familias,
+            'notas_olfativas'         => $notas,
+            'tamanos_ml'              => $tamanos,
+            'generos'                 => PerfumeEnums::GENEROS,
+            'generos_conteo'          => $generosConteo,
+            'concentraciones'         => PerfumeEnums::CONCENTRACIONES,
+            'concentraciones_conteo'  => $concentracionesConteo,
+            'tipos_presentacion'      => PerfumeEnums::TIPOS_PRESENTACION,
+            'etapas_piramide'         => PerfumeEnums::ETAPAS_PIRAMIDE,
+            'rango_precios'           => [
                 'min'     => $min,
                 'min_cop' => PricingService::formatCop($min),
                 'max'     => $max,
@@ -281,6 +307,42 @@ final class CatalogoRepository
     // =========================================================================
     // VARIANTES DE PRODUCTO Y CHECKOUT WHATSAPP
     // =========================================================================
+
+    public function listAllVariantesWithProducto(): array
+    {
+        $rows = $this->db->query('
+            SELECT
+                vp.id,
+                vp.producto_id,
+                vp.tamano_ml,
+                vp.tipo_presentacion,
+                vp.sku,
+                vp.precio_base,
+                vp.disponible,
+                p.nombre AS producto_nombre,
+                p.concentracion,
+                m.nombre AS marca_nombre
+            FROM variantes_producto vp
+            INNER JOIN productos p ON p.id = vp.producto_id
+            INNER JOIN marcas m ON m.id = p.marca_id
+            ORDER BY m.nombre ASC, p.nombre ASC, vp.tamano_ml ASC
+        ')->fetchAll();
+
+        foreach ($rows as &$row) {
+            $row['precio_base_cop'] = PricingService::formatCop((float) $row['precio_base']);
+            $row['etiqueta_completa'] = sprintf(
+                '%s · %s (%s) — %d ml %s (%s)',
+                $row['marca_nombre'],
+                $row['producto_nombre'],
+                $row['concentracion'],
+                (int) $row['tamano_ml'],
+                $row['tipo_presentacion'],
+                $row['precio_base_cop']
+            );
+        }
+
+        return $rows;
+    }
 
     public function createVariante(array $data): array
     {
@@ -650,10 +712,19 @@ final class CatalogoRepository
         if (!is_array($row)) {
             $row = [
                 'id'                => 1,
-                'numero_whatsapp'   => '573000000000',
+                'numero_whatsapp'   => '573207683734',
                 'mensaje_plantilla' => "¡Hola *DREA PERFUMES*!\nQuiero pedir:\n\n{detalle_pedido}\n\n💰 *Total:* {total_cop}",
                 'activo'            => true,
             ];
+        } elseif (($row['numero_whatsapp'] ?? '') === '573000000000') {
+            $this->db->exec("UPDATE configuracion_contacto SET numero_whatsapp = '573207683734' WHERE id = " . (int) $row['id']);
+            $row['numero_whatsapp'] = '573207683734';
+        }
+
+        try {
+            $this->db->exec("ALTER TABLE variantes_producto MODIFY COLUMN tipo_presentacion ENUM('Regular', 'Tester', 'Decant', 'Kit') NOT NULL DEFAULT 'Regular'");
+        } catch (Throwable) {
+            // Ya actualizado o sin cambios necesarios
         }
 
         return ConfiguracionContactoEntity::fromArray($row)->toArray();
@@ -693,9 +764,18 @@ final class CatalogoRepository
 
     public function findAdminByEmail(string $email): ?array
     {
+        $normalized = strtolower(trim($email));
         $stmt = $this->db->prepare('SELECT * FROM usuarios_admin WHERE email = :email LIMIT 1');
-        $stmt->execute([':email' => strtolower(trim($email))]);
+        $stmt->execute([':email' => $normalized]);
         $row = $stmt->fetch();
+
+        if (!is_array($row) && in_array($normalized, ['admin@dreaperfumes.com', 'admin@andreaperfumes.com'], true)) {
+            $fallback = $this->db->query('SELECT * FROM usuarios_admin WHERE id = 1 LIMIT 1')->fetch();
+            if (is_array($fallback)) {
+                return $fallback;
+            }
+        }
+
         return is_array($row) ? $row : null;
     }
 
@@ -733,5 +813,27 @@ final class CatalogoRepository
             'email'  => $email,
             'activo' => true,
         ])->toArray();
+    }
+
+    public function updateAdminPassword(int $adminId, string $currentPassword, string $newPassword): void
+    {
+        if (strlen($newPassword) < 6) {
+            throw new HttpException('La nueva contraseña debe tener al menos 6 caracteres.', 422);
+        }
+
+        $stmt = $this->db->prepare('SELECT * FROM usuarios_admin WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $adminId]);
+        $admin = $stmt->fetch();
+
+        if (!is_array($admin) || !password_verify($currentPassword, (string) $admin['password_hash'])) {
+            throw new HttpException('La contraseña actual ingresada no es correcta.', 401);
+        }
+
+        $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $upd = $this->db->prepare('UPDATE usuarios_admin SET password_hash = :hash WHERE id = :id');
+        $upd->execute([
+            ':hash' => $newHash,
+            ':id'   => $adminId,
+        ]);
     }
 }

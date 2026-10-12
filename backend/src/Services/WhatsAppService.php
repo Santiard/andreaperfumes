@@ -46,7 +46,7 @@ final class WhatsAppService
             $subtotalCop = PricingService::formatCop((float) $item['subtotal']);
 
             $promoBadge = $item['tiene_promocion'] && !empty($item['promocion_nombre'])
-                ? " _(Promo: {$item['promocion_nombre']})_"
+                ? " _(SALE: {$item['promocion_nombre']})_"
                 : '';
 
             $linea = sprintf(
@@ -71,8 +71,11 @@ final class WhatsAppService
         $detalleTexto = implode("\n\n", $lineas);
         $totalCop = PricingService::formatCop($totalGeneral);
 
-        if ($plantilla === '') {
-            $plantilla = "¡Hola *DREA PERFUMES*! ✨\nMe interesa realizar el siguiente pedido:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad?";
+        if ($plantilla === '' || count($items) === 1) {
+            $intro = count($items) === 1
+                ? "¡Hola *DREA PERFUMES*! ✨ Quiero comprar este perfume:"
+                : "¡Hola *DREA PERFUMES*! ✨ Quiero comprar los siguientes perfumes:";
+            $plantilla = "{$intro}\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad y medios de pago?";
         }
 
         // Normalizar saltos de línea escapados si fueron guardados como literal \n en BD

@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-// 1. Autoload PSR-4 (Composer o Autoloader nativo para arranque inmediato en Docker)
+// 1. Autoload PSR-4 (Composer + Respaldo PSR-4 dinámico para nuevas clases)
 $composerAutoload = dirname(__DIR__) . '/vendor/autoload.php';
 if (is_file($composerAutoload)) {
     require_once $composerAutoload;
-} else {
-    spl_autoload_register(static function (string $class): void {
-        $prefix = 'App\\';
-        $baseDir = dirname(__DIR__) . '/src/';
-        $len = strlen($prefix);
-        if (strncmp($prefix, $class, $len) !== 0) {
-            return;
-        }
-        $relativeClass = substr($class, $len);
-        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-        if (is_file($file)) {
-            require_once $file;
-        }
-    });
 }
+
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'App\\';
+    $baseDir = dirname(__DIR__) . '/src/';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    $relativeClass = substr($class, $len);
+    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    if (is_file($file)) {
+        require_once $file;
+    }
+});
 
 use App\Controllers\AdminAuthController;
 use App\Controllers\AdminCatalogoController;
@@ -30,8 +30,9 @@ use App\Core\HttpException;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
+use App\Services\SecurityService;
 
-// 2. Cabeceras CORS para desarrollo y producción con Frontend en React
+// 2. Cabeceras CORS y Endurecimiento de Seguridad HTTP (Hardening)
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -41,8 +42,15 @@ if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     exit;
 }
 
-// 3. Inicializar Request, Router y Controladores
+// 3. Inicializar Request, Cabeceras de Seguridad y Router
 $request = new Request();
+$path = $request->path();
+$isNoIndexRoute = str_starts_with($path, '/api/admin')
+    || str_starts_with($path, '/drea-admin')
+    || str_starts_with($path, '/admin');
+
+SecurityService::applySecurityHeaders($isNoIndexRoute);
+
 $router = new Router();
 
 // =============================================================================
@@ -57,10 +65,11 @@ $router->get('/api/contacto', static fn(Request $req) => (new CatalogoController
 $router->post('/api/checkout/whatsapp', static fn(Request $req) => (new CatalogoController())->generarCheckoutWhatsApp($req));
 
 // =============================================================================
-// RUTAS DE AUTENTICACIÓN ADMINISTRATIVA
+// RUTAS DE AUTENTICACIÓN ADMINISTRATIVA (Con Rate-Limiting Anti-Fuerza Bruta)
 // =============================================================================
 $router->post('/api/admin/auth/login', static fn(Request $req) => (new AdminAuthController())->login($req));
 $router->get('/api/admin/auth/me', static fn(Request $req) => (new AdminAuthController())->me($req), true);
+$router->put('/api/admin/auth/password', static fn(Request $req) => (new AdminAuthController())->changePassword($req), true);
 
 // =============================================================================
 // RUTAS PROTEGIDAS DEL PANEL DE ADMINISTRACIÓN (Requieren Bearer JWT)
@@ -93,6 +102,7 @@ $router->put('/api/admin/notas-olfativas/{id}', static fn(Request $req) => (new 
 $router->delete('/api/admin/notas-olfativas/{id}', static fn(Request $req) => (new AdminCatalogoController())->eliminarNota($req), true);
 
 // Variantes de Producto individuales
+$router->get('/api/admin/variantes', static fn(Request $req) => (new AdminCatalogoController())->listarVariantes($req), true);
 $router->post('/api/admin/variantes', static fn(Request $req) => (new AdminCatalogoController())->crearVariante($req), true);
 $router->put('/api/admin/variantes/{id}', static fn(Request $req) => (new AdminCatalogoController())->actualizarVariante($req), true);
 $router->delete('/api/admin/variantes/{id}', static fn(Request $req) => (new AdminCatalogoController())->eliminarVariante($req), true);
@@ -112,7 +122,7 @@ $router->get('/api/admin/usuarios', static fn(Request $req) => (new AdminCatalog
 $router->post('/api/admin/usuarios', static fn(Request $req) => (new AdminCatalogoController())->crearAdmin($req), true);
 
 // =============================================================================
-// FALLBACK SEO / OPEN GRAPH PARA RUTAS WEB (ej. /, /perfume/{slug})
+// FALLBACK SEO / OPEN GRAPH PARA RUTAS WEB (ej. /, /perfume/{slug}, /drea-admin)
 // =============================================================================
 $router->setFallback(static fn(Request $req) => (new CatalogoController())->renderSeoPage($req));
 

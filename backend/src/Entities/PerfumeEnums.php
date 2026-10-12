@@ -31,6 +31,7 @@ final class PerfumeEnums
         'Regular',
         'Tester',
         'Decant',
+        'Kit',
     ];
 
     public const TIPOS_DESCUENTO = [

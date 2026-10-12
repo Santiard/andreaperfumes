@@ -25,14 +25,14 @@ export const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
   {
     id: 2,
     imageUrl: '/assets/banners/imagen2.webp',
-    eyebrow: 'SELECCIÓN ESPECIAL · SALE',
-    title: 'Ofertas en Perfumes Nicho, Diseñador y Árabes',
+    eyebrow: 'PRIVATE SELECTION · SALE',
+    title: 'Selección SALE en Perfumería Nicho, Diseñador y Árabe',
     subtitle:
-      'Descubre presentaciones regulares, testers y decants originales con precios especiales por tiempo limitado.',
-    ctaLabel: 'Ver Ofertas',
+      'Descubre presentaciones regulares, testers y decants originales con privilegios exclusivos por tiempo limitado.',
+    ctaLabel: 'Explorar SALE',
     filterAction: {
       view: 'catalogo',
-      tituloSeccion: 'Ofertas & Oportunidades (Sale)',
+      tituloSeccion: 'Selección SALE · Piezas de Oportunidad',
       en_promocion: 1,
     },
   },

@@ -56,17 +56,17 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="bg-drea-burgundy text-drea-canvas text-[11px] tracking-editorial uppercase py-2 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3 overflow-hidden">
-            <span className="text-drea-gold-light font-semibold">DREA PERFUMES · CÚCUTA</span>
+            <span className="text-drea-gold-light font-semibold">PERFUMERÍA ORIGINAL</span>
             <span className="hidden md:inline text-white/40">|</span>
             <span className="hidden md:inline text-white/90">
-              Entregas el mismo día en Cúcuta · Envíos asegurados a toda Colombia
+              Visita nuestro Showroom en Cúcuta 📍 · Horario de atención 8am-8pm
             </span>
           </div>
 
           {/* Redes Sociales y Contacto Directo (Sin Login de usuario) */}
           <div className="flex items-center gap-4 ml-auto">
             <a
-              href="https://instagram.com"
+              href={DREA_BRAND.contact.instagramUrl}
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram DREA PERFUMES"
@@ -75,22 +75,13 @@ export const Header: React.FC<HeaderProps> = ({
               Instagram
             </a>
             <a
-              href="https://tiktok.com"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="TikTok DREA PERFUMES"
-              className="hover:text-drea-gold-light transition-colors"
-            >
-              TikTok
-            </a>
-            <a
-              href={`https://wa.me/${whatsappNumber}`}
+              href={DREA_BRAND.contact.whatsappUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-drea-gold-light hover:underline font-medium"
             >
               <MessageCircle className="w-3.5 h-3.5" />
-              <span>Asesoría</span>
+              <span>Asesoría WhatsApp</span>
             </a>
           </div>
         </div>
@@ -313,6 +304,21 @@ export const Header: React.FC<HeaderProps> = ({
                       setOpenDropdown(null);
                       onNavigate({
                         view: 'catalogo',
+                        tituloSeccion: 'Colección Kits & Cofres de Regalo',
+                        tipo_presentacion: 'Kit',
+                      });
+                    }}
+                    className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
+                  >
+                    <span>Kits &amp; Sets de Regalo</span>
+                    <span className="text-[10px] text-drea-gold">→</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenDropdown(null);
+                      onNavigate({
+                        view: 'catalogo',
                         tituloSeccion: 'Perfumería Nicho & Árabe',
                         marca: 'lattafa',
                       });
@@ -384,24 +390,24 @@ export const Header: React.FC<HeaderProps> = ({
             Catálogo
           </button>
 
-          {/* 6. OFERTAS (Sale) */}
+          {/* 6. SALE (Selección Exclusiva con Descuento) */}
           <button
             type="button"
             onClick={() =>
               onNavigate({
                 view: 'catalogo',
-                tituloSeccion: 'Ofertas & Oportunidades (Sale)',
+                tituloSeccion: 'Selección SALE · Piezas de Oportunidad',
                 en_promocion: 1,
               })
             }
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-sm transition-all tracking-widest ${
               currentFilters.en_promocion
                 ? 'bg-drea-burgundy text-drea-gold-light font-semibold'
                 : 'text-drea-burgundy bg-drea-burgundy/10 hover:bg-drea-burgundy hover:text-drea-gold-light font-semibold'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Ofertas</span>
+            <span>SALE</span>
           </button>
         </nav>
 
@@ -556,13 +562,13 @@ export const Header: React.FC<HeaderProps> = ({
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Ofertas & Oportunidades (Sale)',
+                  tituloSeccion: 'Selección SALE · Piezas de Oportunidad',
                   en_promocion: 1,
                 });
               }}
               className="text-left py-2 text-drea-burgundy"
             >
-              Ofertas (Sale)
+              SALE
             </button>
           </div>
         </div>

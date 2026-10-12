@@ -90,6 +90,11 @@ final class AdminCatalogoController
     }
 
     // --- VARIANTES DE PRODUCTO ---
+    public function listarVariantes(Request $request): void
+    {
+        Response::success($this->catalogo->listAllVariantesWithProducto());
+    }
+
     public function crearVariante(Request $request): void
     {
         Response::success($this->catalogo->createVariante($request->allInput()), 'Variante creada.', 201);

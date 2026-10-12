@@ -16,7 +16,7 @@ export interface VarianteProducto {
   id: number;
   producto_id: number;
   tamano_ml: number;
-  tipo_presentacion: 'Regular' | 'Tester' | 'Decant';
+  tipo_presentacion: 'Regular' | 'Tester' | 'Decant' | 'Kit';
   etiqueta: string;
   sku: string | null;
   precio_base: number;
@@ -32,6 +32,19 @@ export interface VarianteProducto {
     etiqueta: string;
   } | null;
   disponible: boolean;
+}
+
+export interface PiramideNotaItem {
+  id: number;
+  nota_id: number;
+  nombre: string;
+  tipo_etapa: 'Salida' | 'Corazón' | 'Fondo';
+}
+
+export interface PiramideOlfativa {
+  Salida: PiramideNotaItem[];
+  Corazón: PiramideNotaItem[];
+  Fondo: PiramideNotaItem[];
 }
 
 export interface Producto {
@@ -62,18 +75,50 @@ export interface Producto {
   precio_desde_cop: string | null;
   tiene_promocion: boolean;
   variantes: VarianteProducto[];
+  piramide_olfativa?: PiramideOlfativa | null;
+}
+
+export interface TamanoFiltro {
+  tamano_ml: number;
+  total_productos: number;
+}
+
+export interface CatalogPublicFiltersMeta {
+  marcas: Marca[];
+  familias_olfativas: FamiliaOlfativa[];
+  tamanos_ml: TamanoFiltro[];
+  generos: string[];
+  generos_conteo: { genero: string; total_productos: number }[];
+  concentraciones: string[];
+  concentraciones_conteo: { concentracion: string; total_productos: number }[];
+  tipos_presentacion: string[];
+  rango_precios: {
+    min: number;
+    min_cop: string;
+    max: number;
+    max_cop: string;
+  };
 }
 
 export interface CatalogFiltersState {
-  view: 'home' | 'catalogo';
+  view: 'home' | 'catalogo' | 'producto';
+  productoSlug?: string;
   tituloSeccion?: string;
+  subtituloSeccion?: string;
   q?: string;
   genero?: string;
   familia?: number;
   marca?: string;
+  concentracion?: string;
   tipo_presentacion?: string;
+  tamano_ml?: number[];
+  precio_min?: number;
+  precio_max?: number;
+  destacado?: number;
   en_promocion?: number;
   orden?: string;
+  per_page?: number;
+  page?: number;
 }
 
 export interface CartItem {

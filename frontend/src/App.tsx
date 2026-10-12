@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { MessageCircle, ShoppingBag, Trash2, X, Sparkles } from 'lucide-react';
+import { MessageCircle, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { Header } from './components/layout/Header';
 import { HeroBanner } from './components/home/HeroBanner';
+import { HomeView } from './components/home/HomeView';
+import { CatalogView } from './components/catalog/CatalogView';
+import { ProductDetailView } from './components/catalog/ProductDetailView';
+import { AdminPanel } from './components/admin/AdminPanel';
 import { DREA_BRAND } from './config/brand.config';
 import {
   CartItem,
   CatalogFiltersState,
+  CatalogPublicFiltersMeta,
   FamiliaOlfativa,
   Producto,
   VarianteProducto,
@@ -16,24 +21,54 @@ function formatCop(value: number): string {
 }
 
 export const App: React.FC = () => {
-  const [filters, setFilters] = useState<CatalogFiltersState>({ view: 'home' });
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const isAdminRoute = pathname === '/drea-admin' || pathname === '/admin';
+
+  if (isAdminRoute) {
+    return <AdminPanel />;
+  }
+
+  const initialProductSlug = pathname.startsWith('/perfume/')
+    ? decodeURIComponent(pathname.replace(/^\/perfume\//, ''))
+    : undefined;
+
+  const [filters, setFilters] = useState<CatalogFiltersState>(
+    initialProductSlug
+      ? { view: 'producto', productoSlug: initialProductSlug }
+      : { view: 'home' }
+  );
+  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
+  const [catalogMeta, setCatalogMeta] = useState<CatalogPublicFiltersMeta | null>(null);
   const [familias, setFamilias] = useState<FamiliaOlfativa[]>([]);
+
+  // Perfumes seleccionados por el Administrador para el Carrusel de Inicio (Home)
+  const [featuredProductos, setFeaturedProductos] = useState<Producto[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState<boolean>(true);
+
+  // Perfumes filtrados en la página de Catálogo
   const [productos, setProductos] = useState<Producto[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [whatsappNumber, setWhatsappNumber] = useState<string>('573000000000');
+  const [totalProductos, setTotalProductos] = useState<number>(0);
+  const [loadingCatalog, setLoadingCatalog] = useState<boolean>(false);
+
+  const [whatsappNumber, setWhatsappNumber] = useState<string>(
+    DREA_BRAND.contact.whatsappNumber
+  );
 
   // Estado del Carrito de Compras (Sin Login)
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState<boolean>(false);
   const [sendingWhatsapp, setSendingWhatsapp] = useState<boolean>(false);
 
-  // Cargar Familias Olfativas y Configuración de Contacto al iniciar
+  // Cargar Metadatos de Filtros, Carrusel de Inicio y Contacto al iniciar
   useEffect(() => {
     fetch('/api/catalogo/filtros')
       .then((r) => r.json())
       .then((res) => {
-        if (res?.ok && Array.isArray(res.data?.familias_olfativas)) {
-          setFamilias(res.data.familias_olfativas);
+        if (res?.ok && res.data) {
+          setCatalogMeta(res.data as CatalogPublicFiltersMeta);
+          if (Array.isArray(res.data.familias_olfativas)) {
+            setFamilias(res.data.familias_olfativas);
+          }
         }
       })
       .catch(() => {});
@@ -46,29 +81,70 @@ export const App: React.FC = () => {
         }
       })
       .catch(() => {});
+
+    setLoadingFeatured(true);
+    fetch('/api/productos?destacado=1&per_page=15')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res?.ok && Array.isArray(res.data?.items)) {
+          setFeaturedProductos(res.data.items);
+        }
+      })
+      .finally(() => setLoadingFeatured(false));
   }, []);
 
-  // Consultar productos cada vez que cambie algún filtro del Header
+  // Consultar el listado del Catálogo cuando el usuario está en la vista 'catalogo'
   useEffect(() => {
-    setLoading(true);
+    if (filters.view !== 'catalogo') return;
+
+    setLoadingCatalog(true);
     const params = new URLSearchParams();
     if (filters.q) params.set('q', filters.q);
     if (filters.genero) params.set('genero', filters.genero);
     if (filters.familia) params.set('familia', String(filters.familia));
     if (filters.marca) params.set('marca', filters.marca);
+    if (filters.concentracion) params.set('concentracion', filters.concentracion);
     if (filters.tipo_presentacion) params.set('tipo_presentacion', filters.tipo_presentacion);
+    if (filters.tamano_ml && filters.tamano_ml.length > 0) {
+      params.set('tamano_ml', filters.tamano_ml.join(','));
+    }
+    if (filters.precio_min !== undefined) params.set('precio_min', String(filters.precio_min));
+    if (filters.precio_max !== undefined) params.set('precio_max', String(filters.precio_max));
+    if (filters.destacado) params.set('destacado', '1');
     if (filters.en_promocion) params.set('en_promocion', '1');
     if (filters.orden) params.set('orden', filters.orden);
+    params.set('per_page', String(filters.per_page ?? 30));
+    if (filters.page) params.set('page', String(filters.page));
 
     fetch(`/api/productos?${params.toString()}`)
       .then((r) => r.json())
       .then((res) => {
         if (res?.ok && Array.isArray(res.data?.items)) {
           setProductos(res.data.items);
+          setTotalProductos(Number(res.data?.pagination?.total ?? res.data.items.length));
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingCatalog(false));
   }, [filters]);
+
+  const handleNavigate = (next: CatalogFiltersState) => {
+    setFilters(next);
+    if (next.view !== 'producto' && window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenProduct = (producto: Producto) => {
+    setSelectedProduct(producto);
+    setFilters((prev) => ({
+      ...prev,
+      view: 'producto',
+      productoSlug: producto.slug,
+    }));
+    window.history.pushState({}, '', `/perfume/${producto.slug}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const cartCount = useMemo(
     () => cart.reduce((acc, item) => acc + item.cantidad, 0),
@@ -84,20 +160,37 @@ export const App: React.FC = () => {
     [cart]
   );
 
-  const handleAddToCart = (producto: Producto, variante?: VarianteProducto) => {
+  const handleAddToCart = (
+    producto: Producto,
+    variante?: VarianteProducto,
+    cantidad: number = 1
+  ) => {
     const selectedVar = variante ?? producto.variantes[0];
     if (!selectedVar) return;
+    const qtyToAdd = Math.max(1, cantidad);
 
     setCart((prev) => {
       const idx = prev.findIndex((i) => i.variante.id === selectedVar.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = { ...updated[idx], cantidad: updated[idx].cantidad + 1 };
+        updated[idx] = { ...updated[idx], cantidad: updated[idx].cantidad + qtyToAdd };
         return updated;
       }
-      return [...prev, { producto, variante: selectedVar, cantidad: 1 }];
+      return [...prev, { producto, variante: selectedVar, cantidad: qtyToAdd }];
     });
     setCartOpen(true);
+  };
+
+  const handleUpdateCartQty = (varianteId: number, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((i) =>
+          i.variante.id === varianteId
+            ? { ...i, cantidad: Math.max(0, i.cantidad + delta) }
+            : i
+        )
+        .filter((i) => i.cantidad > 0)
+    );
   };
 
   const handleRemoveFromCart = (varianteId: number) => {
@@ -138,150 +231,61 @@ export const App: React.FC = () => {
         cartCount={cartCount}
         cartTotalCop={formatCop(cartTotal)}
         whatsappNumber={whatsappNumber}
-        onNavigate={(next) => setFilters(next)}
+        onNavigate={handleNavigate}
         onOpenCart={() => setCartOpen(true)}
       />
 
-      {/* 2. COMPONENTE HERO BANNER (Se muestra en la vista principal 'home') */}
+      {/* 2. VISTA DE INICIO (HOME): HeroBanner + Carrusel de Seleccionados + Categorías + Información de Marca */}
       {filters.view === 'home' && (
-        <HeroBanner onActionClick={(next) => setFilters(next)} />
+        <main className="flex-1">
+          <HeroBanner onActionClick={handleNavigate} />
+          <HomeView
+            featuredProductos={featuredProductos}
+            loading={loadingFeatured}
+            sendingWhatsapp={sendingWhatsapp}
+            onNavigateCatalog={handleNavigate}
+            onOpenProduct={handleOpenProduct}
+            onAddToCart={handleAddToCart}
+            onDirectWhatsApp={handleCheckoutWhatsApp}
+          />
+        </main>
       )}
 
-      {/* 3. SECCIÓN PRINCIPAL DE PREVISUALIZACIÓN DE PRODUCTOS / FILTROS */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-8 border-b border-drea-canvas-border pb-4">
-          <div>
-            <span className="drea-eyebrow text-drea-burgundy">
-              {filters.view === 'home'
-                ? 'SELECCIÓN DESTACADA · MOSTADOR DIGITAL'
-                : 'EXPLORACIÓN DEL CATÁLOGO'}
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-semibold text-drea-ink mt-1">
-              {filters.tituloSeccion ?? 'Fragancias Destacadas'}
-            </h2>
-          </div>
+      {/* 3. VISTA DE CATÁLOGO (Sin HeroBanner): Cabecera de Colección + Filtros Laterales + Grilla */}
+      {filters.view === 'catalogo' && (
+        <main className="flex-1">
+          <CatalogView
+            filters={filters}
+            meta={catalogMeta}
+            productos={productos}
+            totalProductos={totalProductos}
+            loading={loadingCatalog}
+            sendingWhatsapp={sendingWhatsapp}
+            onUpdateFilters={handleNavigate}
+            onOpenProduct={handleOpenProduct}
+            onAddToCart={handleAddToCart}
+            onDirectWhatsApp={handleCheckoutWhatsApp}
+          />
+        </main>
+      )}
 
-          {filters.view !== 'home' && (
-            <button
-              type="button"
-              onClick={() => setFilters({ view: 'home' })}
-              className="text-xs uppercase tracking-wider text-drea-burgundy hover:underline font-semibold"
-            >
-              ← Volver al Inicio
-            </button>
-          )}
-        </div>
+      {/* 4. PÁGINA DEDICADA DE DETALLE DE PRODUCTO (/perfume/:slug) */}
+      {filters.view === 'producto' && (
+        <main className="flex-1">
+          <ProductDetailView
+            initialProducto={selectedProduct}
+            productoSlug={filters.productoSlug ?? selectedProduct?.slug ?? ''}
+            relatedProductos={productos.length > 0 ? productos : featuredProductos}
+            sendingWhatsapp={sendingWhatsapp}
+            onNavigate={handleNavigate}
+            onOpenProduct={handleOpenProduct}
+            onAddToCart={handleAddToCart}
+            onDirectWhatsApp={handleCheckoutWhatsApp}
+          />
+        </main>
+      )}
 
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="h-96 bg-white border border-drea-canvas-border animate-pulse p-6"
-              />
-            ))}
-          </div>
-        ) : productos.length === 0 ? (
-          <div className="bg-white border border-drea-canvas-border p-12 text-center space-y-4">
-            <p className="font-serif text-2xl text-drea-ink">
-              No encontramos fragancias con este filtro específico.
-            </p>
-            <button
-              type="button"
-              onClick={() =>
-                setFilters({ view: 'catalogo', tituloSeccion: 'Catálogo Completo' })
-              }
-              className="drea-btn-primary"
-            >
-              Ver Todo el Catálogo
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {productos.map((prod) => {
-              const mainVar = prod.variantes[0];
-              return (
-                <article
-                  key={prod.id}
-                  className="drea-product-card flex flex-col justify-between p-6 group"
-                >
-                  <div>
-                    {/* Distintivos superiores */}
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <span className="text-[10px] uppercase tracking-editorial text-drea-ink-muted font-semibold">
-                        {prod.marca.nombre} · {prod.concentracion}
-                      </span>
-                      {prod.tiene_promocion ? (
-                        <span className="drea-badge-sale">Oferta</span>
-                      ) : prod.destacado ? (
-                        <span className="drea-badge-featured">Destacado</span>
-                      ) : null}
-                    </div>
-
-                    {/* Imagen del Producto (con fallback elegante) */}
-                    <div className="relative h-56 w-full bg-drea-canvas flex items-center justify-center mb-5 overflow-hidden">
-                      <img
-                        src={prod.imagen.url}
-                        alt={prod.nombre}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-
-                    {/* Nombre, Familia y Género */}
-                    <h3 className="font-serif text-2xl font-semibold text-drea-ink group-hover:text-drea-burgundy transition-colors">
-                      {prod.nombre}
-                    </h3>
-                    <p className="text-xs text-drea-ink-muted mt-1">
-                      {prod.genero}
-                      {prod.familia_olfativa ? ` · Familia ${prod.familia_olfativa.nombre}` : ''}
-                    </p>
-                    {prod.descripcion && (
-                      <p className="text-xs text-drea-ink-body mt-2.5 line-clamp-2 leading-relaxed">
-                        {prod.descripcion}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Precio en COP y Acciones */}
-                  <div className="mt-6 pt-4 border-t border-drea-canvas-border space-y-3">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-[11px] uppercase tracking-wider text-drea-ink-muted">
-                        Desde
-                      </span>
-                      <span className="font-sans text-lg font-bold text-drea-ink">
-                        {prod.precio_desde_cop ?? 'Consultar'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleAddToCart(prod, mainVar)}
-                        className="drea-btn-dark py-2.5 px-3 text-[11px]"
-                      >
-                        + Carrito
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!mainVar || sendingWhatsapp}
-                        onClick={() =>
-                          mainVar &&
-                          handleCheckoutWhatsApp([{ variante_id: mainVar.id, cantidad: 1 }])
-                        }
-                        className="drea-btn-primary py-2.5 px-3 text-[11px]"
-                      >
-                        Comprar
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </main>
-
-      {/* 4. DRAWER LATERAL DEL CARRITO DE COMPRAS -> WHATSAPP */}
+      {/* 5. DRAWER LATERAL DEL CARRITO DE COMPRAS -> WHATSAPP */}
       {cartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md bg-white h-full flex flex-col justify-between p-6 shadow-2xl">
@@ -310,16 +314,39 @@ export const App: React.FC = () => {
                     key={item.variante.id}
                     className="flex items-center justify-between gap-3 border-b border-drea-canvas-border pb-3"
                   >
-                    <div>
-                      <p className="font-serif text-lg font-semibold text-drea-ink">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-serif text-lg font-semibold text-drea-ink truncate">
                         {item.producto.marca.nombre} · {item.producto.nombre}
                       </p>
                       <p className="text-xs text-drea-ink-muted">
-                        {item.variante.etiqueta} · Cant: {item.cantidad}
+                        {item.variante.etiqueta} ({item.variante.tamano_ml} ml)
                       </p>
-                      <p className="text-xs font-bold text-drea-burgundy mt-1">
-                        {formatCop(item.variante.precio_final * item.cantidad)}
-                      </p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="inline-flex items-center border border-drea-canvas-border bg-[#FAF9F7]">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateCartQty(item.variante.id, -1)}
+                            className="px-2 py-1 text-drea-ink hover:text-drea-burgundy"
+                            aria-label="Restar unidad"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="px-2.5 text-xs font-bold text-drea-ink">
+                            {item.cantidad}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateCartQty(item.variante.id, 1)}
+                            className="px-2 py-1 text-drea-ink hover:text-drea-burgundy"
+                            aria-label="Sumar unidad"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <p className="text-xs font-bold text-drea-burgundy">
+                          {formatCop(item.variante.precio_final * item.cantidad)}
+                        </p>
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -361,9 +388,9 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* 5. BOTÓN FLOTANTE DE WHATSAPP (Como en los pantallazos de Mafer y Real) */}
+      {/* 5. BOTÓN FLOTANTE DE WHATSAPP */}
       <a
-        href={`https://wa.me/${whatsappNumber}`}
+        href={DREA_BRAND.contact.whatsappUrl}
         target="_blank"
         rel="noreferrer"
         aria-label="Atención directa por WhatsApp"

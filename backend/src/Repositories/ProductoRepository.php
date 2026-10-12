@@ -98,6 +98,26 @@ final class ProductoRepository
             $params[':tipo_presentacion'] = (string) $filters['tipo_presentacion'];
         }
 
+        if (!empty($filters['tamano_ml'])) {
+            $rawSizes = is_array($filters['tamano_ml'])
+                ? $filters['tamano_ml']
+                : explode(',', (string) $filters['tamano_ml']);
+            $sizes = array_values(array_filter(array_map('intval', $rawSizes), static fn(int $s): bool => $s > 0));
+            if (!empty($sizes)) {
+                $placeholders = [];
+                foreach ($sizes as $idx => $sizeVal) {
+                    $ph = ":tamano_ml_{$idx}";
+                    $placeholders[] = $ph;
+                    $params[$ph] = $sizeVal;
+                }
+                $inClause = implode(', ', $placeholders);
+                $where[] = "EXISTS (
+                    SELECT 1 FROM variantes_producto vp
+                    WHERE vp.producto_id = p.id AND vp.disponible = 1 AND vp.tamano_ml IN ({$inClause})
+                )";
+            }
+        }
+
         if (isset($filters['precio_min']) && is_numeric($filters['precio_min'])) {
             $where[] = 'EXISTS (
                 SELECT 1 FROM variantes_producto vp
@@ -146,7 +166,7 @@ final class ProductoRepository
         $total = (int) $countStmt->fetchColumn();
 
         $page = max(1, (int) ($filters['page'] ?? 1));
-        $perPage = min(50, max(1, (int) ($filters['per_page'] ?? 12)));
+        $perPage = min(150, max(1, (int) ($filters['per_page'] ?? 12)));
         $offset = ($page - 1) * $perPage;
 
         $orderSql = match ((string) ($filters['orden'] ?? 'destacados')) {

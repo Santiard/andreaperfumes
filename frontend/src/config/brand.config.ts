@@ -24,6 +24,20 @@ export const DREA_BRAND = {
     logo: '/assets/brand/drea-logo.png',
   },
 
+  contact: {
+    headline: 'PERFUMERÍA ORIGINAL',
+    showroom: 'Visita nuestro Showroom en Cúcuta 📍',
+    schedule: 'Horario de atención 8am-8pm',
+    advisory: 'Te brindamos asesoría personalizada',
+    whatsappNumber: '573207683734',
+    whatsappDisplay: '+57 320 768 3734',
+    whatsappUrl:
+      'https://api.whatsapp.com/send/?phone=573207683734&text&type=phone_number&app_absent=0&utm_source=ig',
+    instagramHandle: '@perfumeshopcucuta',
+    instagramUrl:
+      'https://www.instagram.com/perfumeshopcucuta?obrf=MXR2bzJuNTk1eHQ1OQ%3D%3D',
+  },
+
   /**
    * Paleta cromática oficial extraída del logo DREA PERFUMES y la Propuesta Digital
    */
