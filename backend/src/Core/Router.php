@@ -57,10 +57,11 @@ final class Router
     public function dispatch(Request $request): void
     {
         $method = $request->method();
+        $lookupMethod = $method === 'HEAD' ? 'GET' : $method;
         $path = $request->path();
 
         foreach ($this->routes as $route) {
-            if ($route['method'] !== $method) {
+            if ($route['method'] !== $lookupMethod) {
                 continue;
             }
 
