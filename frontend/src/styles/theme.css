@@ -1,0 +1,101 @@
+/* ============================================================================
+ * SISTEMA DE DISEÑO Y VARIABLES GLOBALES — DREA PERFUMES (CÚCUTA)
+ * Extraído del logotipo oficial (Borgoña + Oro) y Propuesta Digital 2026
+ * ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Pinyon+Script&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 1. Identidad del Logotipo (Lujo & Deseo) */
+  --drea-burgundy: #7A0C35;
+  --drea-burgundy-deep: #560724;
+  --drea-burgundy-dark: #3D0419;
+  --drea-burgundy-light: #991445;
+
+  --drea-gold: #D4AF37;
+  --drea-gold-light: #F5DF86;
+  --drea-gold-metallic: #E3BF52;
+  --drea-gold-antique: #B5892A;
+
+  /* 2. Paleta Editorial del Catálogo (Calma Visual & Rigor) */
+  --drea-canvas: #F5F4F2;
+  --drea-canvas-secondary: #ECEAE6;
+  --drea-surface: #FFFFFF;
+  --drea-border: #DCD8D0;
+
+  /* 3. Tipografía y Contraste */
+  --drea-ink: #141414;
+  --drea-charcoal: #1F1E1D;
+  --drea-body: #3D3B38;
+  --drea-muted: #6E6A64;
+
+  /* 4. Gradientes de Marca */
+  --drea-gradient-gold: linear-gradient(135deg, #B5892A 0%, #F5DF86 48%, #D4AF37 75%, #9E731D 100%);
+  --drea-gradient-burgundy: linear-gradient(145deg, #8B1038 0%, #7A0C35 55%, #4A051E 100%);
+
+  /* 5. Fuentes */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-script: 'Pinyon Script', cursive;
+}
+
+@layer base {
+  html {
+    background-color: var(--drea-canvas);
+    color: var(--drea-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Subtítulo superior estilo "PERFUMES · CÚCUTA" / "CRITERIO · CONFIANZA · ESTILO" */
+  .drea-eyebrow {
+    @apply font-sans text-xs uppercase tracking-editorial text-drea-ink font-medium;
+  }
+
+  /* Línea divisoria corta bajo titulares editoriales */
+  .drea-divider {
+    @apply w-28 h-[1.5px] bg-drea-ink/60 my-5;
+  }
+
+  /* Tarjeta de producto en grilla limpia sobre fondo neutro */
+  .drea-product-card {
+    @apply bg-drea-canvas-surface border border-drea-canvas-border transition-all duration-300 hover:shadow-editorial-hover hover:border-drea-gold/60;
+  }
+
+  /* Etiquetas discretas para Novedades, Piezas Destacadas y Oportunidades (Sale) */
+  .drea-badge-featured {
+    @apply inline-block px-2.5 py-0.5 text-[11px] uppercase tracking-wider font-medium bg-drea-ink text-drea-canvas;
+  }
+
+  .drea-badge-sale {
+    @apply inline-block px-2.5 py-0.5 text-[11px] uppercase tracking-wider font-medium bg-drea-burgundy text-drea-gold-light;
+  }
+
+  /* Botón principal de compra / WhatsApp con estética de boutique */
+  .drea-btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-white bg-drea-burgundy hover:bg-drea-burgundy-deep transition-colors duration-200;
+  }
+
+  /* Botón secundario negro obsidiana */
+  .drea-btn-dark {
+    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-drea-canvas bg-drea-ink hover:bg-drea-ink-charcoal transition-colors duration-200;
+  }
+
+  /* Texto con efecto dorado metálico del logo DREA */
+  .drea-text-gold {
+    background: var(--drea-gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

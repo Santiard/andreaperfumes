@@ -10,7 +10,7 @@ final class SeoService
 {
     /**
      * Genera el documento HTML con etiquetas SEO, Open Graph (para previsualización en WhatsApp/Instagram)
-     * y datos estructurados Schema.org/Product en JSON-LD.
+     * y datos estructurados Schema.org/Product en JSON-LD bajo la identidad oficial de DREA PERFUMES (Cúcuta).
      * Si existe el build de React en /frontend/dist/index.html, inyecta las etiquetas en su <head>.
      */
     public static function renderSpaWithSeo(?array $producto = null): string
@@ -24,10 +24,10 @@ final class SeoService
             $precioCop = (string) ($producto['precio_desde_cop'] ?? '');
             $precioNum = (float) ($producto['precio_desde'] ?? 0);
 
-            $title = trim("{$nombre} {$concentracion} - {$marca} | Andrea Perfumes");
-            $rawDesc = (string) ($producto['descripcion'] ?? "Compra {$nombre} de {$marca} en Andrea Perfumes.");
+            $title = trim("{$nombre} {$concentracion} - {$marca} | DREA PERFUMES · Cúcuta");
+            $rawDesc = (string) ($producto['descripcion'] ?? "Compra {$nombre} de {$marca} en DREA PERFUMES.");
             $description = $precioCop !== ''
-                ? "Disponible desde {$precioCop} COP. {$rawDesc}"
+                ? "Disponible desde {$precioCop} COP. {$rawDesc} Entrega el mismo día en Cúcuta y envíos a todo el país."
                 : $rawDesc;
             $imageUrl = $baseUrl . (string) ($producto['imagen']['url'] ?? '');
             $canonicalUrl = "{$baseUrl}/perfume/" . (string) ($producto['slug'] ?? '');
@@ -52,8 +52,8 @@ final class SeoService
                 ],
             ];
         } else {
-            $title = 'Andrea Perfumes | Catálogo de Perfumería Original, Árabe y Diseñador';
-            $description = 'Explora nuestro catálogo de perfumes originales, presentaciones regulares, testers y decants. Pedidos directos por WhatsApp en toda Colombia.';
+            $title = 'DREA PERFUMES · Cúcuta | Boutique de Perfumería Exclusiva';
+            $description = 'Boutique digital de perfumería selectiva, elegante y fácil de explorar. Marcas originales, entregas el mismo día en Cúcuta y envíos asegurados a toda Colombia.';
             $imageUrl = "{$baseUrl}/api/productos/1/imagen";
             $canonicalUrl = $baseUrl;
             $ogType = 'website';
@@ -61,9 +61,14 @@ final class SeoService
             $jsonLd = [
                 '@context'    => 'https://schema.org',
                 '@type'       => 'Store',
-                'name'        => 'Andrea Perfumes',
+                'name'        => 'DREA PERFUMES',
                 'description' => $description,
                 'url'         => $baseUrl,
+                'address'     => [
+                    '@type'           => 'PostalAddress',
+                    'addressLocality' => 'Cúcuta',
+                    'addressCountry'  => 'CO',
+                ],
             ];
         }
 
@@ -77,7 +82,7 @@ final class SeoService
     <title>{$escapedTitle}</title>
     <meta name="description" content="{$escapedDesc}">
     <link rel="canonical" href="{$escapedUrl}">
-    <meta property="og:site_name" content="Andrea Perfumes">
+    <meta property="og:site_name" content="DREA PERFUMES">
     <meta property="og:type" content="{$ogType}">
     <meta property="og:title" content="{$escapedTitle}">
     <meta property="og:description" content="{$escapedDesc}">
@@ -94,12 +99,10 @@ HTML;
         $frontendIndex = dirname(__DIR__, 3) . '/frontend/dist/index.html';
         if (is_file($frontendIndex) && is_readable($frontendIndex)) {
             $html = (string) file_get_contents($frontendIndex);
-            // Reemplazar <title>...</title> existente e inyectar bloque SEO antes de </head>
             $html = (string) preg_replace('/<title>.*?<\/title>/is', '', $html);
             return str_ireplace('</head>', $seoBlock . "\n</head>", $html);
         }
 
-        // Vista diagnóstica de estado del Backend cuando aún no se ha compilado el Frontend en React
         return <<<HTML
 <!DOCTYPE html>
 <html lang="es">
@@ -107,27 +110,34 @@ HTML;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {$seoBlock}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background: #0f0f12; color: #f4f1ea; margin: 0; padding: 2.5rem; line-height: 1.6; }
-        .card { max-width: 780px; margin: 0 auto; background: #18181d; border: 1px solid #2e2a23; border-radius: 12px; padding: 2rem; }
-        h1 { color: #d4af37; margin-top: 0; }
-        code { background: #25252d; padding: 0.2rem 0.45rem; border-radius: 4px; color: #f3d27a; }
-        a { color: #d4af37; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #F5F4F2; color: #141414; margin: 0; padding: 3rem 1.5rem; line-height: 1.6; }
+        .card { max-width: 820px; margin: 0 auto; background: #FFFFFF; border: 1px solid #DCD8D0; padding: 2.5rem; box-shadow: 0 10px 30px -10px rgba(20, 20, 20, 0.06); }
+        .eyebrow { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: #7A0C35; font-weight: 600; margin-bottom: 0.5rem; }
+        h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.5rem; color: #141414; margin: 0 0 0.25rem 0; font-weight: 600; }
+        .divider { width: 110px; height: 2px; background: #7A0C35; margin: 1.25rem 0; }
+        code { background: #ECEAE6; padding: 0.2rem 0.45rem; border-radius: 3px; color: #7A0C35; font-size: 0.9em; }
+        a { color: #7A0C35; font-weight: 500; text-decoration: none; }
+        a:hover { color: #D4AF37; text-decoration: underline; }
         ul { padding-left: 1.25rem; }
-        li { margin-bottom: 0.5rem; }
+        li { margin-bottom: 0.55rem; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>Andrea Perfumes — Backend API &amp; Motor SEO Activo</h1>
-        <p>El servidor <strong>PHP 8.3 + MariaDB 11</strong> está en ejecución y las etiquetas <strong>Open Graph / Schema.org</strong> ya han sido inyectadas en el <code>&lt;head&gt;</code> de esta página.</p>
+        <div class="eyebrow">PERFUMES · CÚCUTA · CRITERIO · CONFIANZA · ESTILO</div>
+        <h1>DREA PERFUMES — Backend &amp; Motor SEO</h1>
+        <div class="divider"></div>
+        <p>Boutique digital de perfumería exclusiva. El servidor <strong>PHP 8.3 + MariaDB 11</strong> está operativo y las etiquetas <strong>Open Graph / Schema.org</strong> están inyectadas en el <code>&lt;head&gt;</code>.</p>
         <h3>Endpoints Públicos Listos:</h3>
         <ul>
             <li><a href="/api/health"><code>GET /api/health</code></a> — Estado de la API y Base de Datos</li>
-            <li><a href="/api/catalogo/filtros"><code>GET /api/catalogo/filtros</code></a> — Marcas, Familias, Notas, Géneros y Rango de Precios COP</li>
-            <li><a href="/api/productos"><code>GET /api/productos</code></a> — Catálogo paginado y filtrable (sin binario WebP en el JSON)</li>
-            <li><a href="/api/productos/lattafa-khamrah-edp"><code>GET /api/productos/lattafa-khamrah-edp</code></a> — Detalle con Pirámide Olfativa y Variantes</li>
+            <li><a href="/api/catalogo/filtros"><code>GET /api/catalogo/filtros</code></a> — Marcas, 6 Familias de la Guía Sensorial, Notas y Precios COP</li>
+            <li><a href="/api/productos"><code>GET /api/productos</code></a> — Catálogo paginado (soporta <code>?genero=Mujer|Hombre|Unisex</code> y <code>?en_promocion=1</code> para Sale)</li>
+            <li><a href="/api/productos/lattafa-khamrah-edp"><code>GET /api/productos/lattafa-khamrah-edp</code></a> — Ficha de producto con Pirámide Olfativa y Variantes</li>
             <li><a href="/api/productos/1/imagen"><code>GET /api/productos/1/imagen</code></a> — Imagen binaria WebP con caché inmutable</li>
             <li><a href="/api/contacto"><code>GET /api/contacto</code></a> — Configuración activa de WhatsApp</li>
         </ul>

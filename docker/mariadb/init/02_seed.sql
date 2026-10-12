@@ -1,19 +1,20 @@
 -- =============================================================================
--- DATOS SEMILLA INICIALES: ANDREA PERFUMES
+-- DATOS SEMILLA INICIALES: DREA PERFUMES (CÚCUTA, COLOMBIA)
+-- Alineado con la Propuesta Digital 2026 y Guía Sensorial de Familias Olfativas
 -- =============================================================================
 
 SET NAMES utf8mb4;
 
 -- 1. Usuario Administrador Inicial
--- Email: admin@andreaperfumes.com | Contraseña por defecto: password
+-- Email: admin@dreaperfumes.com | Contraseña por defecto: password
 INSERT INTO `usuarios_admin` (`id`, `nombre`, `email`, `password_hash`, `activo`) VALUES
-(1, 'Administrador Andrea Perfumes', 'admin@andreaperfumes.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', TRUE)
-ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
+(1, 'Administración DREA PERFUMES', 'admin@dreaperfumes.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', TRUE)
+ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`), `email` = VALUES(`email`);
 
--- 2. Configuración de Contacto WhatsApp (con variables dinámicas para pedido individual o carrito)
+-- 2. Configuración de Contacto WhatsApp (Compra Asistida Cúcuta y Envíos Nacionales)
 INSERT INTO `configuracion_contacto` (`id`, `numero_whatsapp`, `mensaje_plantilla`, `activo`) VALUES
-(1, '573000000000', '¡Hola *Andrea Perfumes*! ✨\nMe interesa realizar el siguiente pedido:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad y medios de pago? ¡Gracias!', TRUE)
-ON DUPLICATE KEY UPDATE `numero_whatsapp` = VALUES(`numero_whatsapp`);
+(1, '573000000000', '¡Hola *DREA PERFUMES*! ✨\nMe interesa realizar el siguiente pedido desde el catálogo web:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad en Cúcuta / envío nacional y medios de pago? ¡Gracias!', TRUE)
+ON DUPLICATE KEY UPDATE `numero_whatsapp` = VALUES(`numero_whatsapp`), `mensaje_plantilla` = VALUES(`mensaje_plantilla`);
 
 -- 3. Marcas Base
 INSERT INTO `marcas` (`id`, `nombre`, `slug`, `descripcion`, `activo`) VALUES
@@ -24,14 +25,15 @@ INSERT INTO `marcas` (`id`, `nombre`, `slug`, `descripcion`, `activo`) VALUES
 (5, 'Carolina Herrera', 'carolina-herrera', 'Perfumería sofisticada de gran proyección y carácter.', TRUE)
 ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
 
--- 4. Familias Olfativas Base
+-- 4. Familias Olfativas Oficiales (Guía Sensorial - Página 6 de la Propuesta Digital)
 INSERT INTO `familias_olfativas` (`id`, `nombre`, `descripcion`) VALUES
-(1, 'Oriental Especiada', 'Notas cálidas, especiadas, dulces y envolventes ideales para climas templados/fríos o noche.'),
-(2, 'Amaderada Aromática', 'Acordes de maderas nobles combinados con hierbas aromáticas y cítricos vibrantes.'),
-(3, 'Ámbar Vainilla', 'Fragancias gourmand y sensuales dominadas por vainilla, resinas y acordes dulces.'),
-(4, 'Floral Frutal', 'Composiciones luminosas de flores blancas, rosas y frutas jugosas.'),
-(5, 'Cítrica Fresca', 'Aromas limpios, energizantes y versátiles para uso diario y oficina.')
-ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
+(1, 'Floral', 'jazmín, rosa y delicadeza elegante'),
+(2, 'Cítrica', 'bergamota, mandarina y vitalidad limpia'),
+(3, 'Amaderada', 'cedro, sándalo y carácter sobrio'),
+(4, 'Oriental', 'ámbar, vainilla y seducción cálida'),
+(5, 'Dulce', 'acordes gourmand y presencia envolvente'),
+(6, 'Fresca', 'notas acuáticas, verdes y ligereza moderna')
+ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`), `descripcion` = VALUES(`descripcion`);
 
 -- 5. Notas Olfativas Base
 INSERT INTO `notas_olfativas` (`id`, `nombre`) VALUES
@@ -50,7 +52,11 @@ INSERT INTO `notas_olfativas` (`id`, `nombre`) VALUES
 (13, 'Lavanda'),
 (14, 'Cedro'),
 (15, 'Miel'),
-(16, 'Tabaco')
+(16, 'Tabaco'),
+(17, 'Jazmín'),
+(18, 'Rosa'),
+(19, 'Sándalo'),
+(20, 'Ámbar')
 ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
 
 -- 6. Productos de Ejemplo (Con binario WebP placeholder válido de 34 bytes)
@@ -60,27 +66,27 @@ INSERT INTO `productos` (
     `imagen_data`, `imagen_mime`, `imagen_tamano_bytes`, `destacado`, `activo`
 ) VALUES
 (
-    1, 1, 1, 'Khamrah', 'lattafa-khamrah-edp',
+    1, 1, 4, 'Khamrah', 'lattafa-khamrah-edp',
     'Una fragancia oriental especiada lujosa y envolvente con notas cálidas de canela, dátiles dulces, praliné y un fondo resinoso de vainilla y haba tonka.',
-    'Unisex', 'EDP', 'Noche, Citas, Clima Frío',
+    'Unisex', 'EDP', 'Noche, Citas, Clima Templado/Frío',
     UNHEX('524946461A000000574542505650384C0D0000002F00000010071011118888FE0700'),
     'image/webp', 34, TRUE, TRUE
 ),
 (
-    2, 2, 2, 'Sauvage Eau de Parfum', 'dior-sauvage-edp',
-    'Composición fresca y misteriosa con bergamota de Calabria jugosa, pimienta especiada y una estela amaderada de ambroxan y vainilla de Papúa Nueva Guinea.',
+    2, 2, 3, 'Sauvage Eau de Parfum', 'dior-sauvage-edp',
+    'Composición fresca y misteriosa con bergamota de Calabria jugosa, pimienta especiada y una estela amaderada de ambroxan, cedro y vainilla.',
     'Hombre', 'EDP', 'Uso diario, Oficina, Noche',
     UNHEX('524946461A000000574542505650384C0D0000002F00000010071011118888FE0700'),
     'image/webp', 34, TRUE, TRUE
 ),
 (
-    3, 4, 3, 'Le Male Elixir', 'jean-paul-gaultier-le-male-elixir-parfum',
+    3, 4, 5, 'Le Male Elixir', 'jean-paul-gaultier-le-male-elixir-parfum',
     'Un elixir intenso y adictivo que combina lavanda aromática con la riqueza cálida del haba tonka, miel dorada y tabaco.',
     'Hombre', 'Parfum', 'Fiesta, Noche, Ocasiones Especiales',
     UNHEX('524946461A000000574542505650384C0D0000002F00000010071011118888FE0700'),
     'image/webp', 34, TRUE, TRUE
 )
-ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
+ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`), `familia_olfativa_id` = VALUES(`familia_olfativa_id`);
 
 -- 7. Pirámide Olfativa de los Productos Semilla
 INSERT INTO `piramide_olfativa` (`producto_id`, `nota_id`, `tipo_etapa`) VALUES
@@ -109,9 +115,9 @@ INSERT INTO `variantes_producto` (`id`, `producto_id`, `tamano_ml`, `tipo_presen
 (7, 3, 10, 'Decant', 'JPG-LME-010-DEC', 62000.00, TRUE)
 ON DUPLICATE KEY UPDATE `precio_base` = VALUES(`precio_base`);
 
--- 9. Promoción de Ejemplo Vigente
+-- 9. Promoción de Ejemplo Vigente (Universo "Sale")
 INSERT INTO `promociones` (`id`, `nombre`, `tipo_descuento`, `valor_descuento`, `fecha_inicio`, `fecha_fin`, `activo`) VALUES
-(1, 'Oferta Especial Perfumería Árabe', 'Porcentaje', 10.00, '2025-01-01 00:00:00', '2027-12-31 23:59:59', TRUE)
+(1, 'Selección Sale DREA', 'Porcentaje', 10.00, '2025-01-01 00:00:00', '2027-12-31 23:59:59', TRUE)
 ON DUPLICATE KEY UPDATE `nombre` = VALUES(`nombre`);
 
 INSERT INTO `promocion_variantes` (`promocion_id`, `variante_id`) VALUES

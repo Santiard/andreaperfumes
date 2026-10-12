@@ -651,7 +651,7 @@ final class CatalogoRepository
             $row = [
                 'id'                => 1,
                 'numero_whatsapp'   => '573000000000',
-                'mensaje_plantilla' => "¡Hola *Andrea Perfumes*!\nQuiero pedir:\n\n{detalle_pedido}\n\n💰 *Total:* {total_cop}",
+                'mensaje_plantilla' => "¡Hola *DREA PERFUMES*!\nQuiero pedir:\n\n{detalle_pedido}\n\n💰 *Total:* {total_cop}",
                 'activo'            => true,
             ];
         }

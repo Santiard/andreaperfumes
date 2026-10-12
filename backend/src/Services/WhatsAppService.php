@@ -72,7 +72,7 @@ final class WhatsAppService
         $totalCop = PricingService::formatCop($totalGeneral);
 
         if ($plantilla === '') {
-            $plantilla = "¡Hola *Andrea Perfumes*! ✨\nMe interesa realizar el siguiente pedido:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad?";
+            $plantilla = "¡Hola *DREA PERFUMES*! ✨\nMe interesa realizar el siguiente pedido:\n\n{detalle_pedido}\n\n💰 *Total estimado:* {total_cop}\n\n¿Me confirmas disponibilidad?";
         }
 
         // Normalizar saltos de línea escapados si fueron guardados como literal \n en BD

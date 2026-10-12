@@ -69,6 +69,19 @@ final class ProductoRepository
             $params[':destacado'] = (int) filter_var($filters['destacado'], FILTER_VALIDATE_BOOLEAN);
         }
 
+        $onlySale = filter_var($filters['en_promocion'] ?? $filters['sale'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($onlySale) {
+            $where[] = 'EXISTS (
+                SELECT 1 FROM variantes_producto vp
+                INNER JOIN promocion_variantes pv ON pv.variante_id = vp.id
+                INNER JOIN promociones pr ON pr.id = pv.promocion_id
+                WHERE vp.producto_id = p.id
+                  AND vp.disponible = 1
+                  AND pr.activo = 1
+                  AND NOW() BETWEEN pr.fecha_inicio AND pr.fecha_fin
+            )';
+        }
+
         if (!empty($filters['nota'])) {
             $where[] = 'EXISTS (
                 SELECT 1 FROM piramide_olfativa po

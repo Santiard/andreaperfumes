@@ -30,7 +30,9 @@ final class CatalogoController
         $version = (string) $db->query('SELECT VERSION()')->fetchColumn();
 
         Response::success([
-            'service'      => 'Andrea Perfumes API',
+            'service'      => 'DREA PERFUMES API',
+            'brand'        => 'DREA PERFUMES',
+            'location'     => 'Cúcuta, Colombia',
             'php_version'  => PHP_VERSION,
             'db_engine'    => $version,
             'webp_support' => function_exists('imagewebp'),
