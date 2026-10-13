@@ -104,16 +104,19 @@ INSERT INTO `piramide_olfativa` (`producto_id`, `nota_id`, `tipo_etapa`) VALUES
 (3, 15, 'Fondo'), (3, 8, 'Fondo'), (3, 16, 'Fondo')
 ON DUPLICATE KEY UPDATE `tipo_etapa` = VALUES(`tipo_etapa`);
 
--- 8. Variantes y Precios en Pesos Colombianos (COP)
+-- 8. Variantes y Precios en Pesos Colombianos (COP) — Solo botellas originales Regular y Kits
 INSERT INTO `variantes_producto` (`id`, `producto_id`, `tamano_ml`, `tipo_presentacion`, `sku`, `precio_base`, `disponible`) VALUES
 (1, 1, 100, 'Regular', 'LAT-KHA-100-REG', 195000.00, TRUE),
-(2, 1, 10, 'Decant', 'LAT-KHA-010-DEC', 28000.00, TRUE),
+(2, 1, 100, 'Kit', 'LAT-KHA-100-KIT', 245000.00, TRUE),
 (3, 2, 100, 'Regular', 'DIO-SAU-100-REG', 620000.00, TRUE),
-(4, 2, 100, 'Tester', 'DIO-SAU-100-TST', 510000.00, TRUE),
-(5, 2, 10, 'Decant', 'DIO-SAU-010-DEC', 68000.00, TRUE),
+(4, 2, 200, 'Regular', 'DIO-SAU-200-REG', 850000.00, TRUE),
 (6, 3, 125, 'Regular', 'JPG-LME-125-REG', 580000.00, TRUE),
-(7, 3, 10, 'Decant', 'JPG-LME-010-DEC', 62000.00, TRUE)
-ON DUPLICATE KEY UPDATE `precio_base` = VALUES(`precio_base`);
+(7, 3, 125, 'Kit', 'JPG-LME-125-KIT', 680000.00, TRUE)
+ON DUPLICATE KEY UPDATE
+    `tamano_ml` = VALUES(`tamano_ml`),
+    `tipo_presentacion` = VALUES(`tipo_presentacion`),
+    `sku` = VALUES(`sku`),
+    `precio_base` = VALUES(`precio_base`);
 
 -- 9. Promoción de Ejemplo Vigente (Universo "Sale")
 INSERT INTO `promociones` (`id`, `nombre`, `tipo_descuento`, `valor_descuento`, `fecha_inicio`, `fecha_fin`, `activo`) VALUES

@@ -31,31 +31,17 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
 }) => {
   const [openDropdown, setOpenDropdown] = useState<'familias' | 'perfumes' | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState(currentFilters.q ?? '');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Si estamos en la vista de inicio ('home'), ocultamos el enlace "INICIO" del menú
   const isHomePage = currentFilters.view === 'home';
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = searchInput.trim();
-    onNavigate({
-      view: 'catalogo',
-      tituloSeccion: trimmed ? `Resultados para "${trimmed}"` : 'Catálogo Completo',
-      q: trimmed || undefined,
-    });
-    setSearchOpen(false);
-    setMobileMenuOpen(false);
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full bg-drea-canvas-surface/95 backdrop-blur-md border-b border-drea-canvas-border transition-all">
-      {/* 1. TOP BAR: Mensajes de Confianza + Redes Sociales (Estilo Cartier / Mafer / Real) */}
-      <div className="bg-drea-burgundy text-drea-canvas text-[11px] tracking-editorial uppercase py-2 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3 overflow-hidden">
+      {/* 1. TOP BAR: Mensajes de Confianza + Redes Sociales (Centrado en móvil, distribuido en desktop) */}
+      <div className="bg-drea-burgundy text-drea-canvas text-[10px] sm:text-[11px] tracking-wider sm:tracking-editorial uppercase py-2 px-3 sm:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center md:justify-between gap-1 sm:gap-2 text-center">
+          <div className="flex items-center justify-center gap-3 overflow-hidden">
             <span className="text-drea-gold-light font-semibold">PERFUMERÍA ORIGINAL</span>
             <span className="hidden md:inline text-white/40">|</span>
             <span className="hidden md:inline text-white/90">
@@ -63,8 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
-          {/* Redes Sociales y Contacto Directo (Sin Login de usuario) */}
-          <div className="flex items-center gap-4 ml-auto">
+          {/* Redes Sociales y Contacto Directo (Centrado en móvil, a la derecha en desktop) */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4 md:ml-auto">
             <a
               href={DREA_BRAND.contact.instagramUrl}
               target="_blank"
@@ -74,13 +60,14 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Instagram
             </a>
+            <span className="text-white/35">|</span>
             <a
               href={DREA_BRAND.contact.whatsappUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-drea-gold-light hover:underline font-medium"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <MessageCircle className="w-3.5 h-3.5 shrink-0" />
               <span>Asesoría WhatsApp</span>
             </a>
           </div>
@@ -88,12 +75,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 2. CABECERA PRINCIPAL: Logo + Menú de Categorías con Dropdowns + Buscador y Carrito */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 h-20 flex items-center justify-between gap-2 sm:gap-6">
         {/* Botón Menú Móvil */}
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-drea-ink hover:text-drea-burgundy transition-colors"
+          className="lg:hidden p-2 text-drea-ink hover:text-drea-burgundy transition-colors shrink-0"
           aria-label="Abrir menú de navegación"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -106,9 +93,9 @@ export const Header: React.FC<HeaderProps> = ({
             setOpenDropdown(null);
             onNavigate({ view: 'home' });
           }}
-          className="flex items-center gap-3 text-left group focus:outline-none"
+          className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none shrink-0"
         >
-          <div className="w-12 h-12 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-sm border border-drea-gold/40">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-sm border border-drea-gold/40 shrink-0">
             <img
               src={DREA_BRAND.assets.logo}
               alt={DREA_BRAND.name}
@@ -119,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-serif text-2xl sm:text-3xl tracking-wider font-semibold text-drea-ink leading-none">
               DREA
             </span>
-            <span className="font-sans text-[9px] tracking-widest uppercase text-drea-burgundy font-semibold mt-1">
+            <span className="font-sans text-[8.5px] sm:text-[9px] tracking-[0.16em] sm:tracking-widest uppercase text-drea-burgundy font-semibold mt-1 whitespace-nowrap">
               PERFUMES · CÚCUTA
             </span>
           </div>
@@ -248,24 +235,21 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {openDropdown === 'perfumes' && (
-              <div className="absolute left-0 top-full pt-2 w-64 z-50">
-                <div className="bg-drea-canvas-surface border border-drea-canvas-border shadow-editorial-hover py-3 px-4 flex flex-col gap-1">
-                  <span className="text-[10px] tracking-editorial uppercase text-drea-ink-muted py-1 border-b border-drea-canvas-border mb-1">
-                    Por Universo
-                  </span>
+              <div className="absolute left-0 top-full pt-2 w-56 z-50">
+                <div className="bg-drea-canvas-surface border border-drea-canvas-border shadow-editorial-hover py-2.5 px-4 flex flex-col gap-0.5">
                   <button
                     type="button"
                     onClick={() => {
                       setOpenDropdown(null);
                       onNavigate({
                         view: 'catalogo',
-                        tituloSeccion: 'Perfumes para Mujer (Dama)',
-                        genero: 'Mujer',
+                        tituloSeccion: 'Todos los Perfumes',
+                        tipo_presentacion: 'Regular',
                       });
                     }}
                     className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
                   >
-                    <span>Mujer (Dama)</span>
+                    <span>Todos los perfumes</span>
                     <span className="text-[10px] text-drea-gold">→</span>
                   </button>
                   <button
@@ -274,13 +258,28 @@ export const Header: React.FC<HeaderProps> = ({
                       setOpenDropdown(null);
                       onNavigate({
                         view: 'catalogo',
-                        tituloSeccion: 'Perfumes para Hombre (Caballero)',
+                        tituloSeccion: 'Perfumes para Hombre',
                         genero: 'Hombre',
                       });
                     }}
                     className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
                   >
-                    <span>Hombre (Caballero)</span>
+                    <span>Hombre</span>
+                    <span className="text-[10px] text-drea-gold">→</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenDropdown(null);
+                      onNavigate({
+                        view: 'catalogo',
+                        tituloSeccion: 'Perfumes para Mujer',
+                        genero: 'Mujer',
+                      });
+                    }}
+                    className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
+                  >
+                    <span>Mujer</span>
                     <span className="text-[10px] text-drea-gold">→</span>
                   </button>
                   <button
@@ -304,62 +303,13 @@ export const Header: React.FC<HeaderProps> = ({
                       setOpenDropdown(null);
                       onNavigate({
                         view: 'catalogo',
-                        tituloSeccion: 'Colección Kits & Cofres de Regalo',
+                        tituloSeccion: 'Sets & Cofres de Regalo',
                         tipo_presentacion: 'Kit',
                       });
                     }}
                     className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
                   >
-                    <span>Kits &amp; Sets de Regalo</span>
-                    <span className="text-[10px] text-drea-gold">→</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenDropdown(null);
-                      onNavigate({
-                        view: 'catalogo',
-                        tituloSeccion: 'Perfumería Nicho & Árabe',
-                        marca: 'lattafa',
-                      });
-                    }}
-                    className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
-                  >
-                    <span>Nicho &amp; Árabes</span>
-                    <span className="text-[10px] text-drea-gold">→</span>
-                  </button>
-
-                  <span className="text-[10px] tracking-editorial uppercase text-drea-ink-muted py-1 border-b border-drea-canvas-border mt-2 mb-1">
-                    Presentaciones
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenDropdown(null);
-                      onNavigate({
-                        view: 'catalogo',
-                        tituloSeccion: 'Decants Originales (10 ml)',
-                        tipo_presentacion: 'Decant',
-                      });
-                    }}
-                    className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
-                  >
-                    <span>Decants</span>
-                    <span className="text-[10px] text-drea-gold">→</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenDropdown(null);
-                      onNavigate({
-                        view: 'catalogo',
-                        tituloSeccion: 'Presentación Tester',
-                        tipo_presentacion: 'Tester',
-                      });
-                    }}
-                    className="text-left py-2 px-2 hover:bg-drea-canvas hover:text-drea-burgundy transition-colors flex items-center justify-between"
-                  >
-                    <span>Testers</span>
+                    <span>Sets</span>
                     <span className="text-[10px] text-drea-gold">→</span>
                   </button>
                 </div>
@@ -411,15 +361,26 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </nav>
 
-        {/* 3. ACCIONES DERECHA: Buscador Inteligente + Carrito con Total COP (Sin Login) */}
+        {/* 3. ACCIONES DERECHA: Página del Buscador + Carrito con Total COP (Sin Login) */}
         <div className="flex items-center gap-4">
           <button
             type="button"
-            onClick={() => setSearchOpen(!searchOpen)}
-            aria-label="Buscar fragancia"
-            className="p-2 text-drea-ink hover:text-drea-burgundy transition-colors"
+            onClick={() => {
+              setOpenDropdown(null);
+              setMobileMenuOpen(false);
+              onNavigate({ view: 'buscador', q: currentFilters.q });
+            }}
+            aria-label="Abrir buscador de fragancias"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-2 transition-colors ${
+              currentFilters.view === 'buscador'
+                ? 'text-drea-burgundy font-semibold border-b-2 border-drea-burgundy'
+                : 'text-drea-ink hover:text-drea-burgundy'
+            }`}
           >
             <Search className="w-5 h-5" />
+            <span className="hidden xl:inline text-[11px] uppercase tracking-wider font-medium">
+              Buscar
+            </span>
           </button>
 
           <button
@@ -441,40 +402,10 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 4. BARRA DESPLEGABLE DEL BUSCADOR INTELIGENTE */}
-      {searchOpen && (
-        <div className="border-t border-drea-canvas-border bg-drea-canvas py-4 px-4 sm:px-8">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="max-w-3xl mx-auto flex items-center gap-3"
-          >
-            <Search className="w-5 h-5 text-drea-ink-muted shrink-0" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Buscar por perfume (ej. Khamrah, Sauvage), marca, nota olfativa (vainilla, cedro)..."
-              className="w-full bg-white border border-drea-canvas-border px-4 py-2.5 text-sm text-drea-ink focus:outline-none focus:border-drea-burgundy"
-              autoFocus
-            />
-            <button type="submit" className="drea-btn-primary py-2.5 px-5 shrink-0">
-              Buscar
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchOpen(false)}
-              className="p-2 text-drea-ink-muted hover:text-drea-ink"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* 5. MENÚ DESPLEGABLE MÓVIL */}
+      {/* 4. MENÚ DESPLEGABLE MÓVIL (Tres barritas a la izquierda) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-drea-canvas-border bg-drea-canvas-surface px-6 py-5 space-y-4">
-          <div className="flex flex-col space-y-2.5 text-xs uppercase tracking-wider font-semibold">
+        <div className="lg:hidden border-t border-drea-canvas-border bg-drea-canvas-surface px-6 py-4">
+          <div className="flex flex-col divide-y divide-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink">
             {!isHomePage && (
               <button
                 type="button"
@@ -482,11 +413,12 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onNavigate({ view: 'home' });
                 }}
-                className="text-left py-2 border-b border-drea-canvas-border"
+                className="text-left py-3 hover:text-drea-burgundy transition-colors"
               >
                 Inicio
               </button>
             )}
+
             <button
               type="button"
               onClick={() => {
@@ -497,38 +429,70 @@ export const Header: React.FC<HeaderProps> = ({
                   orden: 'recientes',
                 });
               }}
-              className="text-left py-2 border-b border-drea-canvas-border"
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
             >
-              Lanzamientos Recientes
+              Lanzamientos recientes
             </button>
+
             <button
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Perfumes para Mujer (Dama)',
-                  genero: 'Mujer',
+                  tituloSeccion: 'Todos los Perfumes',
+                  tipo_presentacion: 'Regular',
                 });
               }}
-              className="text-left py-2 border-b border-drea-canvas-border"
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
             >
-              Perfumes · Mujer (Dama)
+              Todos los perfumes
             </button>
+
             <button
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Perfumes para Hombre (Caballero)',
+                  tituloSeccion: 'Catálogo Completo',
+                });
+              }}
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
+            >
+              Catálogo completo
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigate({
+                  view: 'catalogo',
+                  tituloSeccion: 'Perfumes para Hombre',
                   genero: 'Hombre',
                 });
               }}
-              className="text-left py-2 border-b border-drea-canvas-border"
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
             >
-              Perfumes · Hombre (Caballero)
+              Hombre
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigate({
+                  view: 'catalogo',
+                  tituloSeccion: 'Perfumes para Mujer',
+                  genero: 'Mujer',
+                });
+              }}
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
+            >
+              Mujer
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -539,36 +503,39 @@ export const Header: React.FC<HeaderProps> = ({
                   genero: 'Unisex',
                 });
               }}
-              className="text-left py-2 border-b border-drea-canvas-border"
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
             >
-              Perfumes · Unisex
+              Unisex
             </button>
+
             <button
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Catálogo Completo',
+                  tituloSeccion: 'Sets & Kits de Regalo',
+                  tipo_presentacion: 'Kit',
                 });
               }}
-              className="text-left py-2 border-b border-drea-canvas-border"
+              className="text-left py-3 hover:text-drea-burgundy transition-colors"
             >
-              Catálogo Completo
+              Sets
             </button>
+
             <button
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Selección SALE · Piezas de Oportunidad',
+                  tituloSeccion: 'Selección SALE',
                   en_promocion: 1,
                 });
               }}
-              className="text-left py-2 text-drea-burgundy"
+              className="text-left py-3 text-drea-burgundy font-bold"
             >
-              SALE
+              Sale
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { HeroBanner } from './components/home/HeroBanner';
 import { HomeView } from './components/home/HomeView';
 import { CatalogView } from './components/catalog/CatalogView';
 import { ProductDetailView } from './components/catalog/ProductDetailView';
+import { SearchView } from './components/catalog/SearchView';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { DREA_BRAND } from './config/brand.config';
 import {
@@ -20,6 +21,106 @@ function formatCop(value: number): string {
   return '$' + Math.round(value).toLocaleString('es-CO');
 }
 
+function parseFiltersFromLocation(): CatalogFiltersState {
+  const rawPath = window.location.pathname.replace(/\/+$/, '') || '/';
+  const params = new URLSearchParams(window.location.search);
+
+  if (rawPath.startsWith('/perfume/')) {
+    const slug = decodeURIComponent(rawPath.replace(/^\/perfume\//, ''));
+    return { view: 'producto', productoSlug: slug };
+  }
+
+  if (rawPath === '/buscar') {
+    return {
+      view: 'buscador',
+      q: params.get('q') ?? undefined,
+    };
+  }
+
+  const hasCatalogQuery =
+    rawPath === '/catalogo' ||
+    params.has('genero') ||
+    params.has('familia') ||
+    params.has('marca') ||
+    params.has('concentracion') ||
+    params.has('tipo_presentacion') ||
+    params.has('en_promocion') ||
+    params.has('orden') ||
+    params.has('q');
+
+  if (hasCatalogQuery) {
+    const tamanoStr = params.get('tamano_ml');
+    const tamanoArr = tamanoStr
+      ? tamanoStr
+          .split(',')
+          .map((n) => Number(n))
+          .filter((n) => !Number.isNaN(n) && n > 0)
+      : undefined;
+
+    return {
+      view: 'catalogo',
+      tituloSeccion: params.get('titulo') ?? 'Catálogo Completo',
+      q: params.get('q') ?? undefined,
+      genero: params.get('genero') ?? undefined,
+      familia: params.get('familia') ? Number(params.get('familia')) : undefined,
+      marca: params.get('marca') ?? undefined,
+      concentracion: params.get('concentracion') ?? undefined,
+      tipo_presentacion: params.get('tipo_presentacion') ?? undefined,
+      tamano_ml: tamanoArr && tamanoArr.length > 0 ? tamanoArr : undefined,
+      precio_min: params.get('precio_min') ? Number(params.get('precio_min')) : undefined,
+      precio_max: params.get('precio_max') ? Number(params.get('precio_max')) : undefined,
+      destacado: params.get('destacado') ? Number(params.get('destacado')) : undefined,
+      en_promocion: params.get('en_promocion') ? Number(params.get('en_promocion')) : undefined,
+      orden: params.get('orden') ?? undefined,
+      per_page: params.get('per_page') ? Number(params.get('per_page')) : undefined,
+      page: params.get('page') ? Number(params.get('page')) : undefined,
+    };
+  }
+
+  return { view: 'home' };
+}
+
+function buildUrlFromFilters(next: CatalogFiltersState): string {
+  if (next.view === 'home') {
+    return '/';
+  }
+
+  if (next.view === 'producto' && next.productoSlug) {
+    return `/perfume/${encodeURIComponent(next.productoSlug)}`;
+  }
+
+  if (next.view === 'buscador') {
+    if (next.q && next.q.trim()) {
+      return `/buscar?q=${encodeURIComponent(next.q.trim())}`;
+    }
+    return '/buscar';
+  }
+
+  const params = new URLSearchParams();
+  if (next.tituloSeccion && next.tituloSeccion !== 'Catálogo Completo') {
+    params.set('titulo', next.tituloSeccion);
+  }
+  if (next.q) params.set('q', next.q);
+  if (next.genero) params.set('genero', next.genero);
+  if (next.familia) params.set('familia', String(next.familia));
+  if (next.marca) params.set('marca', next.marca);
+  if (next.concentracion) params.set('concentracion', next.concentracion);
+  if (next.tipo_presentacion) params.set('tipo_presentacion', next.tipo_presentacion);
+  if (next.tamano_ml && next.tamano_ml.length > 0) {
+    params.set('tamano_ml', next.tamano_ml.join(','));
+  }
+  if (next.precio_min !== undefined) params.set('precio_min', String(next.precio_min));
+  if (next.precio_max !== undefined) params.set('precio_max', String(next.precio_max));
+  if (next.destacado) params.set('destacado', '1');
+  if (next.en_promocion) params.set('en_promocion', '1');
+  if (next.orden) params.set('orden', next.orden);
+  if (next.per_page && next.per_page !== 30) params.set('per_page', String(next.per_page));
+  if (next.page && next.page > 1) params.set('page', String(next.page));
+
+  const qs = params.toString();
+  return qs ? `/catalogo?${qs}` : '/catalogo';
+}
+
 export const App: React.FC = () => {
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
   const isAdminRoute = pathname === '/drea-admin' || pathname === '/admin';
@@ -28,14 +129,8 @@ export const App: React.FC = () => {
     return <AdminPanel />;
   }
 
-  const initialProductSlug = pathname.startsWith('/perfume/')
-    ? decodeURIComponent(pathname.replace(/^\/perfume\//, ''))
-    : undefined;
-
-  const [filters, setFilters] = useState<CatalogFiltersState>(
-    initialProductSlug
-      ? { view: 'producto', productoSlug: initialProductSlug }
-      : { view: 'home' }
+  const [filters, setFilters] = useState<CatalogFiltersState>(() =>
+    parseFiltersFromLocation()
   );
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [catalogMeta, setCatalogMeta] = useState<CatalogPublicFiltersMeta | null>(null);
@@ -58,6 +153,34 @@ export const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState<boolean>(false);
   const [sendingWhatsapp, setSendingWhatsapp] = useState<boolean>(false);
+
+  // Sincronización con el Historial del Navegador (Botón Atrás / Adelante nativo)
+  useEffect(() => {
+    const initial = parseFiltersFromLocation();
+    window.history.replaceState(
+      {
+        filters: initial,
+        selectedProduct: null,
+        internalDepth: window.history.state?.internalDepth ?? 0,
+      },
+      '',
+      buildUrlFromFilters(initial)
+    );
+
+    const onPopState = (event: PopStateEvent) => {
+      if (event.state && event.state.filters) {
+        setFilters(event.state.filters as CatalogFiltersState);
+        setSelectedProduct((event.state.selectedProduct as Producto) ?? null);
+      } else {
+        setFilters(parseFiltersFromLocation());
+        setSelectedProduct(null);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   // Cargar Metadatos de Filtros, Carrusel de Inicio y Contacto al iniciar
   useEffect(() => {
@@ -128,22 +251,70 @@ export const App: React.FC = () => {
   }, [filters]);
 
   const handleNavigate = (next: CatalogFiltersState) => {
+    const nextUrl = buildUrlFromFilters(next);
+    const currentUrl = window.location.pathname + window.location.search;
+    const nextDepth = (window.history.state?.internalDepth ?? 0) + 1;
+
     setFilters(next);
-    if (next.view !== 'producto' && window.location.pathname !== '/') {
-      window.history.pushState({}, '', '/');
+    if (next.view !== 'producto') {
+      setSelectedProduct(null);
     }
+
+    if (nextUrl !== currentUrl || next.view !== filters.view) {
+      window.history.pushState(
+        {
+          filters: next,
+          selectedProduct: null,
+          internalDepth: nextDepth,
+        },
+        '',
+        nextUrl
+      );
+    } else {
+      window.history.replaceState(
+        {
+          filters: next,
+          selectedProduct: null,
+          internalDepth: window.history.state?.internalDepth ?? 0,
+        },
+        '',
+        nextUrl
+      );
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenProduct = (producto: Producto) => {
-    setSelectedProduct(producto);
-    setFilters((prev) => ({
-      ...prev,
+    const nextFilters: CatalogFiltersState = {
+      ...filters,
       view: 'producto',
       productoSlug: producto.slug,
-    }));
-    window.history.pushState({}, '', `/perfume/${producto.slug}`);
+    };
+    const nextUrl = buildUrlFromFilters(nextFilters);
+    const nextDepth = (window.history.state?.internalDepth ?? 0) + 1;
+
+    setSelectedProduct(producto);
+    setFilters(nextFilters);
+    window.history.pushState(
+      {
+        filters: nextFilters,
+        selectedProduct: producto,
+        internalDepth: nextDepth,
+      },
+      '',
+      nextUrl
+    );
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGoBack = () => {
+    const currentDepth = window.history.state?.internalDepth ?? 0;
+    if (currentDepth > 0) {
+      window.history.back();
+    } else {
+      handleNavigate({ view: 'home' });
+    }
   };
 
   const cartCount = useMemo(
@@ -214,20 +385,21 @@ export const App: React.FC = () => {
     }
   };
 
+  const activeFamiliasList =
+    familias.length > 0
+      ? familias
+      : DREA_BRAND.sensoryFamilies.map((f, i) => ({
+          id: i + 1,
+          nombre: f.nombre,
+          descripcion: f.microdescripcion,
+        }));
+
   return (
     <div className="min-h-screen flex flex-col bg-drea-canvas text-drea-ink">
       {/* 1. COMPONENTE HEADER CONSTANTE */}
       <Header
         currentFilters={filters}
-        familiasOlfativas={
-          familias.length > 0
-            ? familias
-            : DREA_BRAND.sensoryFamilies.map((f, i) => ({
-                id: i + 1,
-                nombre: f.nombre,
-                descripcion: f.microdescripcion,
-              }))
-        }
+        familiasOlfativas={activeFamiliasList}
         cartCount={cartCount}
         cartTotalCop={formatCop(cartTotal)}
         whatsappNumber={whatsappNumber}
@@ -251,7 +423,7 @@ export const App: React.FC = () => {
         </main>
       )}
 
-      {/* 3. VISTA DE CATÁLOGO (Sin HeroBanner): Cabecera de Colección + Filtros Laterales + Grilla */}
+      {/* 3. VISTA DE CATÁLOGO (Sin HeroBanner): Cabecera de Colección + Filtros Laterales + Pasarelas Burberry */}
       {filters.view === 'catalogo' && (
         <main className="flex-1">
           <CatalogView
@@ -269,7 +441,24 @@ export const App: React.FC = () => {
         </main>
       )}
 
-      {/* 4. PÁGINA DEDICADA DE DETALLE DE PRODUCTO (/perfume/:slug) */}
+      {/* 4. PÁGINA DEDICADA DEL BUSCADOR (/buscar) */}
+      {filters.view === 'buscador' && (
+        <main className="flex-1">
+          <SearchView
+            initialQuery={filters.q}
+            familiasOlfativas={activeFamiliasList}
+            featuredProductos={featuredProductos}
+            sendingWhatsapp={sendingWhatsapp}
+            onNavigate={handleNavigate}
+            onGoBack={handleGoBack}
+            onOpenProduct={handleOpenProduct}
+            onAddToCart={handleAddToCart}
+            onDirectWhatsApp={handleCheckoutWhatsApp}
+          />
+        </main>
+      )}
+
+      {/* 5. PÁGINA DEDICADA DE DETALLE DE PRODUCTO (/perfume/:slug) */}
       {filters.view === 'producto' && (
         <main className="flex-1">
           <ProductDetailView
@@ -278,6 +467,7 @@ export const App: React.FC = () => {
             relatedProductos={productos.length > 0 ? productos : featuredProductos}
             sendingWhatsapp={sendingWhatsapp}
             onNavigate={handleNavigate}
+            onGoBack={handleGoBack}
             onOpenProduct={handleOpenProduct}
             onAddToCart={handleAddToCart}
             onDirectWhatsApp={handleCheckoutWhatsApp}

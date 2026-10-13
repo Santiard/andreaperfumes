@@ -1475,8 +1475,8 @@ export const AdminPanel: React.FC = () => {
                     onChange={(e) => setProdGenero(e.target.value as any)}
                     className="w-full border border-drea-canvas-border px-3 py-2 text-sm bg-white"
                   >
-                    <option value="Mujer">Mujer (Dama)</option>
-                    <option value="Hombre">Hombre (Caballero)</option>
+                    <option value="Mujer">Mujer</option>
+                    <option value="Hombre">Hombre</option>
                     <option value="Unisex">Unisex</option>
                   </select>
                 </div>
@@ -1592,10 +1592,10 @@ export const AdminPanel: React.FC = () => {
                       setProdVariantes((prev) => [
                         ...prev,
                         {
-                          tamano_ml: 10,
-                          tipo_presentacion: 'Decant',
+                          tamano_ml: 100,
+                          tipo_presentacion: 'Regular',
                           sku: '',
-                          precio_base: 35000,
+                          precio_base: 250000,
                           disponible: true,
                         },
                       ])
@@ -1645,8 +1645,6 @@ export const AdminPanel: React.FC = () => {
                         >
                           <option value="Regular">Regular</option>
                           <option value="Kit">Kit (Set / Estuche)</option>
-                          <option value="Tester">Tester</option>
-                          <option value="Decant">Decant</option>
                         </select>
                       </div>
 

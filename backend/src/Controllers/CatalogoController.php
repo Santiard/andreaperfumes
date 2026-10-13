@@ -65,7 +65,10 @@ final class CatalogoController
 
     /**
      * Endpoint dedicado GET /api/productos/{id}/imagen
-     * Sirve el binario WebP directamente con Cache-Control: public, max-age=604800, immutable.
+     * Prioriza:
+     * 1) Imagen subida desde el panel admin (> 100 bytes en BD),
+     * 2) Archivo local en frontend/public/assets/productos/producto{id}.{webp,png,jpg,jpeg},
+     * 3) Placeholder binario de la BD.
      */
     public function servirImagen(Request $request): void
     {
@@ -74,7 +77,30 @@ final class CatalogoController
             throw new HttpException('ID de producto inválido.', 400);
         }
 
+        // 1. Si colocaste un archivo en frontend/public/assets/productos/producto{id}.{webp,png,jpg,jpeg}, se sirve directo
+        $localDir = dirname(__DIR__, 3) . '/frontend/public/assets/productos';
+        $extensions = [
+            'webp' => 'image/webp',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+        ];
+
+        foreach ($extensions as $ext => $mimeType) {
+            $candidate = "{$localDir}/producto{$id}.{$ext}";
+            if (is_file($candidate) && is_readable($candidate)) {
+                $binary = (string) file_get_contents($candidate);
+                $size = strlen($binary);
+                $mtime = (int) filemtime($candidate);
+                $etag = sha1("local-{$id}-{$mtime}-{$size}");
+                Response::webpBinary($binary, $mimeType, $size, $etag);
+                return;
+            }
+        }
+
+        // 2. Respaldo: imagen binaria almacenada en MariaDB
         $img = $this->productos->getBinaryImageById($id);
+
         if ($img === null || empty($img['imagen_data'])) {
             throw new HttpException('Imagen no encontrada.', 404);
         }

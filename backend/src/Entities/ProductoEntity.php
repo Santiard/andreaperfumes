@@ -22,6 +22,16 @@ final class ProductoEntity
         $updatedAt = (string) ($row['updated_at'] ?? '');
         $versionTimestamp = $updatedAt !== '' ? strtotime($updatedAt) : time();
 
+        // Si existe imagen local en frontend/public/assets/productos/producto{id}.*, usar su fecha de modificación para actualizar caché al instante
+        $localDir = dirname(__DIR__, 3) . '/frontend/public/assets/productos';
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+            $localFile = "{$localDir}/producto{$id}.{$ext}";
+            if (is_file($localFile)) {
+                $versionTimestamp = max((int) $versionTimestamp, (int) filemtime($localFile));
+                break;
+            }
+        }
+
         $formattedVariantes = [];
         $precioMinimoFinal = null;
         $tienePromocion = false;

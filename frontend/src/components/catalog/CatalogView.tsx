@@ -394,50 +394,46 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               </span>
             </label>
 
-            {/* Tipos de Presentación: Regular / Kit / Decant / Tester */}
-            {(meta?.tipos_presentacion ?? ['Regular', 'Kit', 'Decant', 'Tester']).map((tipo) => {
-              const checked = filters.tipo_presentacion === tipo;
-              return (
-                <label
-                  key={tipo}
-                  className="flex items-center justify-between cursor-pointer group"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() =>
-                        onUpdateFilters({
-                          ...filters,
-                          view: 'catalogo',
-                          tipo_presentacion: checked ? undefined : tipo,
-                          tituloSeccion:
-                            !checked && tipo === 'Kit'
-                              ? 'Colección Kits & Cofres de Regalo'
-                              : filters.tituloSeccion,
-                          page: 1,
-                        })
-                      }
-                      className="w-3.5 h-3.5 accent-drea-burgundy rounded-none border-drea-canvas-border"
-                    />
-                    <span className="text-[11px] uppercase tracking-wider text-drea-ink-body group-hover:text-drea-ink">
-                      {tipo === 'Kit'
-                        ? 'KITS & SETS DE REGALO'
-                        : tipo === 'Decant'
-                        ? 'DECANTS (ATOMIZADORES)'
-                        : tipo === 'Tester'
-                        ? 'PRESENTACIÓN TESTER'
-                        : 'BOTELLA REGULAR'}
+            {/* Tipos de Presentación: Regular / Kit */}
+            {(meta?.tipos_presentacion ?? ['Regular', 'Kit'])
+              .filter((tipo) => tipo !== 'Decant' && tipo !== 'Tester')
+              .map((tipo) => {
+                const checked = filters.tipo_presentacion === tipo;
+                return (
+                  <label
+                    key={tipo}
+                    className="flex items-center justify-between cursor-pointer group"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() =>
+                          onUpdateFilters({
+                            ...filters,
+                            view: 'catalogo',
+                            tipo_presentacion: checked ? undefined : tipo,
+                            tituloSeccion:
+                              !checked && tipo === 'Kit'
+                                ? 'Colección Sets & Cofres de Regalo'
+                                : filters.tituloSeccion,
+                            page: 1,
+                          })
+                        }
+                        className="w-3.5 h-3.5 accent-drea-burgundy rounded-none border-drea-canvas-border"
+                      />
+                      <span className="text-[11px] uppercase tracking-wider text-drea-ink-body group-hover:text-drea-ink">
+                        {tipo === 'Kit' ? 'SETS & COFRES DE REGALO' : 'BOTELLA REGULAR'}
+                      </span>
                     </span>
-                  </span>
-                </label>
-              );
-            })}
+                  </label>
+                );
+              })}
           </div>
         )}
       </div>
 
-      {/* 4. FILTRAR POR TAMAÑO (100ml (6), 200ml (5), 50ml (1), 10ml (25)...) */}
+      {/* 4. FILTRAR POR TAMAÑO (100ml, 125ml, 200ml, 50ml...) */}
       <div className="border-b border-drea-canvas-border pb-5">
         <button
           type="button"
@@ -459,8 +455,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             {(meta?.tamanos_ml && meta.tamanos_ml.length > 0
               ? meta.tamanos_ml
               : [
-                  { tamano_ml: 5, total_productos: 0 },
-                  { tamano_ml: 10, total_productos: 0 },
                   { tamano_ml: 50, total_productos: 0 },
                   { tamano_ml: 75, total_productos: 0 },
                   { tamano_ml: 100, total_productos: 0 },
@@ -783,10 +777,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       {/* =====================================================================
           2. CONTENEDOR PRINCIPAL DEL CATÁLOGO (BREADCRUMB + SIDEBAR ESTÁTICA + PASARELAS BURBERRY)
       ===================================================================== */}
-      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-8 py-8 sm:py-10">
+      <div className="max-w-[1600px] w-full mx-auto px-2.5 sm:px-8 py-5 sm:py-10">
         {/* Breadcrumb superior editorial */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-drea-canvas-border">
-          <nav className="flex items-center gap-2 text-[11px] uppercase tracking-editorial text-drea-ink-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 sm:pb-5 sm:mb-6 border-b border-drea-canvas-border">
+          <nav className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] uppercase tracking-editorial text-drea-ink-muted">
             <button
               type="button"
               onClick={() => onUpdateFilters({ view: 'home' })}
@@ -808,7 +802,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               COLECCIONES
             </button>
             <span>/</span>
-            <span className="text-drea-ink font-semibold">
+            <span className="text-drea-ink font-semibold truncate max-w-[150px] sm:max-w-none">
               {filters.tituloSeccion ?? 'Fragancias Destacadas'}
             </span>
           </nav>
@@ -817,10 +811,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <button
             type="button"
             onClick={() => setMobileFiltersOpen(true)}
-            className="lg:hidden inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink"
+            className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-drea-canvas-border text-[11px] uppercase tracking-wider font-semibold text-drea-ink"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-drea-burgundy" />
-            Filtrar y Ordenar {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+            Filtrar {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
           </button>
         </div>
 
@@ -832,10 +826,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
           {/* COLUMNA DERECHA: BARRA SUPERIOR + PASARELAS HORIZONTALES ESTILO BURBERRY */}
           <div className="flex-1 w-full min-w-0">
-            {/* Barra superior: Conteo ("8 of 431 items" -> "X de Y fragancias") | Mostrar: 12/30/60/90 | Ordenar | Vista */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5 pb-3.5 border-b border-drea-canvas-border">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-medium text-drea-ink tracking-wide">
+            {/* Barra superior: Conteo ("X de Y fragancias") | Mostrar: 12/30/60/90 | Ordenar | Vista */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-drea-canvas-border">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="text-[11px] sm:text-xs font-medium text-drea-ink tracking-wide">
                   {productos.length} de {totalProductos}{' '}
                   {totalProductos === 1 ? 'fragancia' : 'fragancias'}
                 </span>
@@ -880,32 +874,28 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 ))}
               </div>
 
-              {/* Controles Derechos: Mostrar 12/30/60/90 | Selector Ordenar | Pasarela / Editorial */}
-              <div className="flex flex-wrap items-center gap-5 text-xs">
-                {/* Mostrar : 12 / 30 / 60 / 90 */}
-                <div className="hidden sm:flex items-center gap-1.5 text-drea-ink-muted">
-                  <span className="text-drea-ink font-medium">Mostrar :</span>
-                  {[12, 30, 60, 90].map((num, idx, arr) => (
-                    <React.Fragment key={num}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onUpdateFilters({
-                            ...filters,
-                            view: 'catalogo',
-                            per_page: num,
-                            page: 1,
-                          })
-                        }
-                        className={`hover:text-drea-ink transition-colors ${
-                          currentPerPage === num ? 'font-bold text-drea-ink' : ''
-                        }`}
-                      >
-                        {num}
-                      </button>
-                      {idx < arr.length - 1 && <span className="text-drea-canvas-border">/</span>}
-                    </React.Fragment>
-                  ))}
+              {/* Controles Derechos: Selector de Cantidad por Página (<select>) | Selector Ordenar | Pasarela / Editorial */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs">
+                {/* Selector de cantidad por página */}
+                <div className="flex items-center">
+                  <select
+                    aria-label="Cantidad de fragancias por página"
+                    value={currentPerPage}
+                    onChange={(e) =>
+                      onUpdateFilters({
+                        ...filters,
+                        view: 'catalogo',
+                        per_page: Number(e.target.value),
+                        page: 1,
+                      })
+                    }
+                    className="bg-transparent border-b border-drea-ink/40 pb-1 pr-2 sm:pr-3 text-[11px] sm:text-xs font-medium text-drea-ink focus:outline-none focus:border-drea-burgundy cursor-pointer"
+                  >
+                    <option value={12}>Ver: 12 por página</option>
+                    <option value={30}>Ver: 30 por página</option>
+                    <option value={60}>Ver: 60 por página</option>
+                    <option value={90}>Ver: 90 por página</option>
+                  </select>
                 </div>
 
                 {/* Dropdown rápido de ordenamiento (sincronizado con el sidebar) */}
@@ -920,7 +910,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                         page: 1,
                       })
                     }
-                    className="bg-transparent border-b border-drea-ink/40 pb-1 pr-4 text-xs font-medium text-drea-ink focus:outline-none focus:border-drea-burgundy cursor-pointer"
+                    className="bg-transparent border-b border-drea-ink/40 pb-1 pr-2 sm:pr-4 text-[11px] sm:text-xs font-medium text-drea-ink focus:outline-none focus:border-drea-burgundy cursor-pointer"
                   >
                     <option value="destacados">Ordenar por popularidad</option>
                     <option value="recientes">Ordenar por lanzamientos</option>
@@ -961,20 +951,20 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </div>
 
             {/* =================================================================
-                PASARELAS HORIZONTALES ESTILO BURBERRY (Mismas medidas, lienzo continuo)
+                PASARELAS HORIZONTALES ESTILO BURBERRY (En móvil: 2 columnas = 4 productos en pantalla)
             ================================================================= */}
             {loading ? (
               <div
-                className={`grid gap-x-[1px] gap-y-8 bg-[#E8E6E1] border border-[#E8E6E1] ${
+                className={`grid gap-x-[1px] gap-y-3 sm:gap-y-8 bg-[#E8E6E1] border border-[#E8E6E1] ${
                   viewMode === 'feed'
-                    ? 'grid-cols-1 md:grid-cols-2'
-                    : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+                    ? 'grid-cols-2'
+                    : 'grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
                 }`}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                   <div key={n} className="bg-white flex flex-col">
-                    <div className="aspect-[4/5] w-full bg-[#F7F6F4] animate-pulse" />
-                    <div className="h-[88px] bg-white p-4 animate-pulse" />
+                    <div className="aspect-square sm:aspect-[4/5] w-full bg-[#F7F6F4] animate-pulse" />
+                    <div className="h-[74px] sm:h-[88px] bg-white p-3 sm:p-4 animate-pulse" />
                   </div>
                 ))}
               </div>
@@ -997,10 +987,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               </div>
             ) : (
               <div
-                className={`grid gap-x-[1px] gap-y-10 bg-[#EAE8E4] border border-[#EAE8E4] ${
+                className={`grid gap-x-[1px] gap-y-3 sm:gap-y-10 bg-[#EAE8E4] border border-[#EAE8E4] ${
                   viewMode === 'feed'
-                    ? 'grid-cols-1 md:grid-cols-2'
-                    : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+                    ? 'grid-cols-2'
+                    : 'grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
                 }`}
               >
                 {productos.map((prod) => {
@@ -1011,7 +1001,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   const selectedVar =
                     variantsList.find((v) => v.id === chosenVarId) ?? variantsList[0];
 
-                  // Umbral de precios (ej. $ 45.000 - $ 380.000 COP) cuando hay varios tamaños
+                  // Umbral de precios (ej. $ 195.000 - $ 245.000 COP) cuando hay varios tamaños
                   const finalPrices = variantsList.map((v) => v.precio_final);
                   const minPrice = finalPrices.length > 0 ? Math.min(...finalPrices) : 0;
                   const maxPrice = finalPrices.length > 0 ? Math.max(...finalPrices) : 0;
@@ -1028,21 +1018,23 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                       key={prod.id}
                       className="bg-white flex flex-col justify-between group relative select-none"
                     >
-                      {/* 1. LIENZO SUPERIOR UNIFORME (Misma medida exacta aspect-[4/5] en toda la fila) */}
+                      {/* 1. LIENZO SUPERIOR UNIFORME (En móvil aspect-square para ver 4 productos a la vez; en desktop aspect-[4/5]) */}
                       <div
                         onClick={() => openProductDetail(prod)}
                         className={`relative w-full bg-[#F7F6F4] flex items-center justify-center overflow-hidden cursor-pointer ${
-                          viewMode === 'feed' ? 'aspect-[4/4.3]' : 'aspect-[4/5]'
+                          viewMode === 'feed'
+                            ? 'aspect-square sm:aspect-[4/4.3]'
+                            : 'aspect-square sm:aspect-[4/5]'
                         }`}
                       >
-                        {/* Etiqueta superior izquierda minimalista tipo Burberry ("New In" / "SALE -15%") */}
-                        <div className="absolute top-3.5 left-4 z-10 flex items-center gap-2">
+                        {/* Etiqueta superior izquierda minimalista tipo Burberry ("SALE -10%" / "Destacado") */}
+                        <div className="absolute top-2 left-2.5 sm:top-3.5 sm:left-4 z-10 flex items-center gap-1.5">
                           {prod.tiene_promocion ? (
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-drea-burgundy">
+                            <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-drea-burgundy">
                               {discountBadgeText}
                             </span>
                           ) : prod.destacado ? (
-                            <span className="text-[11px] font-semibold tracking-wide text-drea-ink">
+                            <span className="text-[9px] sm:text-[11px] font-semibold tracking-wide text-drea-ink">
                               Destacado
                             </span>
                           ) : null}
@@ -1052,13 +1044,13 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                         <img
                           src={prod.imagen.url}
                           alt={`${prod.marca.nombre} - ${prod.nombre}`}
-                          className="w-full h-full object-contain p-7 sm:p-9 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full object-contain p-3 sm:p-8 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
                         />
 
-                        {/* Barra sutil de acción rápida al hacer hover (No altera las medidas de la tarjeta) */}
+                        {/* Barra sutil de acción rápida al hacer hover en desktop */}
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          className="absolute inset-x-0 bottom-0 z-10 bg-white/95 backdrop-blur-xs border-t border-[#EAE8E4] px-3 py-2.5 flex items-center justify-between gap-2 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
+                          className="hidden sm:flex absolute inset-x-0 bottom-0 z-10 bg-white/95 backdrop-blur-xs border-t border-[#EAE8E4] px-3 py-2.5 items-center justify-between gap-2 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
                         >
                           <button
                             type="button"
@@ -1081,57 +1073,61 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. FRANJA INFERIOR ARQUITECTÓNICA (Idéntica a Burberry: Izquierda Nombre + Swatches / Derecha Precio COP + Datos) */}
-                      <div className="bg-white px-4 py-3.5 min-h-[86px] flex flex-col justify-between border-t border-[#F0EEEA]">
-                        {/* Fila 1: Nombre del Perfume a la izquierda · Umbral de Precios / Precio COP a la derecha */}
+                      {/* 2. FRANJA INFERIOR ARQUITECTÓNICA (Compacta en móvil para 2 columnas; lado a lado en desktop) */}
+                      <div className="bg-white px-2.5 py-2.5 sm:px-4 sm:py-3.5 sm:min-h-[86px] flex flex-col justify-between border-t border-[#F0EEEA]">
+                        {/* Fila 1: En móvil Nombre arriba y Precio abajo; en desktop Nombre a la izquierda y Precio a la derecha */}
                         <div
                           onClick={() => openProductDetail(prod)}
-                          className="flex items-baseline justify-between gap-3 cursor-pointer"
+                          className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-3 cursor-pointer"
                         >
-                          <h3 className="font-sans text-[12px] sm:text-[13px] font-medium text-drea-ink group-hover:text-drea-burgundy transition-colors truncate">
-                            {prod.nombre} · <span className="text-drea-ink-muted font-normal">{prod.marca.nombre}</span>
+                          <h3 className="font-sans text-[11px] sm:text-[13px] font-medium text-drea-ink group-hover:text-drea-burgundy transition-colors truncate">
+                            {prod.nombre}{' '}
+                            <span className="text-drea-ink-muted font-normal">
+                              · {prod.marca.nombre}
+                            </span>
                           </h3>
 
-                          {/* Precio o Umbral de Precios en COP alineado a la derecha */}
-                          <div className="shrink-0 text-right">
+                          {/* Precio o Umbral de Precios en COP */}
+                          <div className="shrink-0 sm:text-right">
                             {selectedVar ? (
                               chosenVarId && selectedVar.tiene_promocion ? (
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className="text-[11px] text-drea-ink-muted line-through">
+                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                  <span className="text-[10px] sm:text-[11px] text-drea-ink-muted line-through">
                                     {selectedVar.precio_base_cop}
                                   </span>
-                                  <span className="text-[12px] sm:text-[13px] font-semibold text-drea-burgundy">
-                                    {selectedVar.precio_final_cop} COP
+                                  <span className="text-[11px] sm:text-[13px] font-semibold text-drea-burgundy">
+                                    {selectedVar.precio_final_cop}
                                   </span>
                                 </div>
                               ) : hasPriceRange && !chosenVarId ? (
-                                <span className="text-[12px] sm:text-[13px] font-medium text-drea-ink">
-                                  {formatCop(minPrice)} - {formatCop(maxPrice)} COP
+                                <span className="text-[11px] sm:text-[13px] font-semibold sm:font-medium text-drea-ink">
+                                  {formatCop(minPrice)} - {formatCop(maxPrice)}
                                 </span>
                               ) : selectedVar.tiene_promocion ? (
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className="text-[11px] text-drea-ink-muted line-through">
+                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                  <span className="text-[10px] sm:text-[11px] text-drea-ink-muted line-through">
                                     {selectedVar.precio_base_cop}
                                   </span>
-                                  <span className="text-[12px] sm:text-[13px] font-semibold text-drea-burgundy">
-                                    {selectedVar.precio_final_cop} COP
+                                  <span className="text-[11px] sm:text-[13px] font-semibold text-drea-burgundy">
+                                    {selectedVar.precio_final_cop}
                                   </span>
                                 </div>
                               ) : (
-                                <span className="text-[12px] sm:text-[13px] font-medium text-drea-ink">
-                                  {selectedVar.precio_final_cop} COP
+                                <span className="text-[11px] sm:text-[13px] font-semibold sm:font-medium text-drea-ink">
+                                  {selectedVar.precio_final_cop}
                                 </span>
                               )
                             ) : (
-                              <span className="text-[12px] text-drea-ink-muted">Consultar</span>
+                              <span className="text-[11px] sm:text-[12px] text-drea-ink-muted">
+                                Consultar
+                              </span>
                             )}
                           </div>
                         </div>
 
-                        {/* Fila 2: Swatches/Tamaños a la izquierda (como los cuadritos de Burberry) · Datos olfativos a la derecha */}
-                        <div className="flex items-center justify-between gap-2 mt-2.5">
-                          {/* Swatches de tamaños (10ml, 100ml, Kit) */}
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Fila 2: Swatches/Tamaños a la izquierda · Datos olfativos a la derecha */}
+                        <div className="flex items-center justify-between gap-1.5 mt-2">
+                          <div className="flex items-center gap-1 flex-wrap">
                             {variantsList.map((v) => {
                               const isSelected = chosenVarId
                                 ? chosenVarId === v.id
@@ -1147,7 +1143,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                                     }))
                                   }
                                   title={`${v.tamano_ml} ml (${v.tipo_presentacion}) - ${v.precio_final_cop} COP`}
-                                  className={`px-1.5 py-0.5 text-[10px] leading-none border transition-all ${
+                                  className={`px-1.5 py-0.5 text-[9px] sm:text-[10px] leading-none border transition-all ${
                                     isSelected
                                       ? 'border-drea-ink bg-drea-ink text-white font-semibold'
                                       : 'border-[#D8D4CC] bg-[#FAF9F7] text-drea-ink hover:border-drea-ink'
@@ -1162,7 +1158,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                           </div>
 
                           {/* Micro-datos sensoriales a la derecha */}
-                          <span className="text-[10px] text-drea-ink-muted truncate">
+                          <span className="hidden sm:inline text-[10px] text-drea-ink-muted truncate">
                             {prod.concentracion} · {prod.familia_olfativa?.nombre ?? prod.genero}
                           </span>
                         </div>

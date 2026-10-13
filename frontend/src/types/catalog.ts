@@ -16,7 +16,7 @@ export interface VarianteProducto {
   id: number;
   producto_id: number;
   tamano_ml: number;
-  tipo_presentacion: 'Regular' | 'Tester' | 'Decant' | 'Kit';
+  tipo_presentacion: 'Regular' | 'Kit';
   etiqueta: string;
   sku: string | null;
   precio_base: number;
@@ -101,7 +101,7 @@ export interface CatalogPublicFiltersMeta {
 }
 
 export interface CatalogFiltersState {
-  view: 'home' | 'catalogo' | 'producto';
+  view: 'home' | 'catalogo' | 'producto' | 'buscador';
   productoSlug?: string;
   tituloSeccion?: string;
   subtituloSeccion?: string;

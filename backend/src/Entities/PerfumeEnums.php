@@ -29,8 +29,6 @@ final class PerfumeEnums
 
     public const TIPOS_PRESENTACION = [
         'Regular',
-        'Tester',
-        'Decant',
         'Kit',
     ];
 

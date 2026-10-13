@@ -58,14 +58,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
     onOpenProduct(prod);
   };
 
-  // Los 4 Recuadros de Categorías en el Home: Hombre, Mujer, Kits y Nicho
+  // Los 4 Recuadros de Categorías en el Home: Hombre, Mujer, Unisex y Kits
   const categoryBoxes = [
     {
       id: 'hombre',
       title: 'HOMBRE',
-      subtitle: 'Carácter, maderas nobles y proyección magnética',
-      badge: 'CABALLERO',
-      imageUrl: '/assets/categorias/hombre.webp?v=2',
+      imageUrl: '/assets/categorias/caballero.webp',
       bgGradient:
         'linear-gradient(145deg, #141414 0%, #2B1921 55%, #560724 100%)',
       filterAction: {
@@ -79,9 +77,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     {
       id: 'mujer',
       title: 'MUJER',
-      subtitle: 'Flores blancas, ámbar sedoso y elegancia atemporal',
-      badge: 'DAMA',
-      imageUrl: '/assets/categorias/mujer.webp?v=2',
+      imageUrl: '/assets/categorias/dama.webp',
       bgGradient:
         'linear-gradient(145deg, #3D0419 0%, #7A0C35 55%, #8B1038 100%)',
       filterAction: {
@@ -93,35 +89,31 @@ export const HomeView: React.FC<HomeViewProps> = ({
       },
     },
     {
-      id: 'kits',
-      title: 'KITS',
-      subtitle: 'Cofres con perfume, crema corporal, champú y más',
-      badge: 'SETS & ESTUCHES',
-      imageUrl: '/assets/categorias/kits.webp?v=2',
-      bgGradient:
-        'linear-gradient(145deg, #24211E 0%, #4A3E2D 55%, #8C6D32 100%)',
-      filterAction: {
-        view: 'catalogo' as const,
-        tituloSeccion: 'Colección Kits & Cofres de Regalo',
-        subtituloSeccion:
-          'Estuches y sets de regalo originales acompañados de loción corporal, gel de ducha o atomizador de viaje.',
-        tipo_presentacion: 'Kit',
-      },
-    },
-    {
-      id: 'nicho',
-      title: 'NICHO',
-      subtitle: 'Alta perfumería de autor, extractos puros y casas árabes',
-      badge: 'ALTA PERFUMERÍA',
-      imageUrl: '/assets/categorias/nicho.webp?v=2',
+      id: 'unisex',
+      title: 'UNISEX',
+      imageUrl: '/assets/categorias/sale.webp',
       bgGradient:
         'linear-gradient(145deg, #0F0F0F 0%, #3D0419 50%, #141414 100%)',
       filterAction: {
         view: 'catalogo' as const,
-        tituloSeccion: 'Alta Perfumería Nicho & Autor',
+        tituloSeccion: 'Perfumería Unisex',
         subtituloSeccion:
-          'Creaciones extraordinarias de perfumería nicho y casas orientales de lujo para coleccionistas.',
-        marca: 'lattafa',
+          'Fragancias versátiles y de autor concebidas para trascender géneros con carácter propio.',
+        genero: 'Unisex',
+      },
+    },
+    {
+      id: 'sets',
+      title: 'SETS',
+      imageUrl: '/assets/categorias/kits2.webp',
+      bgGradient:
+        'linear-gradient(145deg, #24211E 0%, #4A3E2D 55%, #8C6D32 100%)',
+      filterAction: {
+        view: 'catalogo' as const,
+        tituloSeccion: 'Colección Sets & Cofres de Regalo',
+        subtituloSeccion:
+          'Estuches y sets de regalo originales acompañados de loción corporal, gel de ducha o atomizador de viaje.',
+        tipo_presentacion: 'Kit',
       },
     },
   ];
@@ -245,15 +237,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       <Flame className="w-4 h-4 fill-drea-burgundy text-drea-burgundy" />
                     </div>
 
-                    {/* Imagen del Perfume */}
+                    {/* Imagen del Perfume (Funde el fondo blanco igual que en el Catálogo sin recuadro gris) */}
                     <div
                       onClick={() => openProductDetail(prod)}
-                      className="relative h-56 w-full bg-drea-canvas flex items-center justify-center mb-4 overflow-hidden cursor-pointer"
+                      className="relative aspect-[4/5] w-full bg-[#F7F6F4] flex items-center justify-center mb-4 overflow-hidden cursor-pointer"
                     >
                       <img
                         src={prod.imagen.url}
                         alt={prod.nombre}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain p-6 mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
 
@@ -390,8 +382,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="group relative h-80 sm:h-96 p-3.5 text-left overflow-hidden border border-drea-gold/30 hover:border-drea-gold transition-all duration-500 shadow-editorial hover:shadow-luxury"
             >
               {/* Contenedor interior delimitado por la línea dorada: de la línea hacia afuera queda el degradado; de la línea hacia adentro va la imagen */}
-              <div className="relative w-full h-full border border-drea-gold/35 group-hover:border-drea-gold transition-colors overflow-hidden flex flex-col justify-between p-5">
-                {/* Imagen responsiva dentro del marco interior */}
+              <div className="relative w-full h-full border border-drea-gold/35 group-hover:border-drea-gold transition-colors overflow-hidden flex flex-col justify-end p-5">
+                {/* Imagen responsiva dentro del marco interior (Sin degradado encima para ver la foto natural) */}
                 <img
                   src={cat.imageUrl}
                   alt={cat.title}
@@ -401,29 +393,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
 
-                {/* Velo oscuro editorial dentro del recuadro para garantizar lectura perfecta sobre la foto */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/25 pointer-events-none" />
-
-                {/* Etiqueta superior */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <span className="px-2.5 py-1 bg-black/45 backdrop-blur-xs border border-drea-gold/40 text-[10px] uppercase tracking-editorial text-drea-gold-light font-semibold">
-                    {cat.badge}
-                  </span>
-                  <Sparkles className="w-4 h-4 text-drea-gold group-hover:rotate-12 transition-transform" />
-                </div>
-
-                {/* Contenido Central y Botón */}
-                <div className="relative z-10 space-y-2">
-                  <h3 className="font-serif text-3xl sm:text-4xl font-semibold tracking-wide text-white group-hover:text-drea-gold-light transition-colors drop-shadow-xs">
+                {/* Título limpio sobre la imagen (CABALLERO · DAMA · KITS · NICHO) */}
+                <div className="relative z-10 flex items-end justify-between gap-2 pt-2">
+                  <h3 className="font-serif text-3xl sm:text-4xl font-semibold tracking-wider text-white group-hover:text-drea-gold-light transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                     {cat.title}
                   </h3>
-                  <p className="text-xs text-white/85 leading-relaxed line-clamp-2 font-light">
-                    {cat.subtitle}
-                  </p>
-                  <div className="pt-2 inline-flex items-center gap-2 text-[11px] uppercase tracking-editorial font-semibold text-drea-gold group-hover:translate-x-1 transition-transform">
-                    <span>Ver Colección</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
+                  <ArrowRight className="w-5 h-5 text-drea-gold-light mb-1.5 group-hover:translate-x-1 transition-transform drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]" />
                 </div>
               </div>
             </button>
@@ -434,13 +409,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =====================================================================
           3. INFORMACIÓN DE LA MARCA, SHOWROOM, HORARIO Y REDES SOCIALES
       ===================================================================== */}
-      <section className="bg-drea-ink text-white border-t-2 border-drea-gold/40">
+      <section className="bg-drea-ink text-white border-t border-white/15">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-20 space-y-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Identidad DREA PERFUMES & Lema Oficial */}
-            <div className="lg:col-span-5 space-y-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-3">
-                <div className="w-14 h-14 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-drea-gold/50">
+            <div className="lg:col-span-5 space-y-5 text-center lg:text-left">
+              <div className="inline-flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-white/20">
                   <img
                     src={DREA_BRAND.assets.logo}
                     alt={DREA_BRAND.name}
@@ -448,7 +423,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   />
                 </div>
                 <div className="text-left">
-                  <span className="text-[11px] uppercase tracking-[0.28em] text-drea-gold font-semibold block">
+                  <span className="text-[10px] uppercase tracking-[0.28em] text-white/60 font-semibold block">
                     {DREA_BRAND.contact.headline}
                   </span>
                   <h2 className="font-serif text-3xl font-semibold text-white tracking-wider">
@@ -457,38 +432,36 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2 text-sm sm:text-base text-white/90">
-                <p className="font-serif text-xl sm:text-2xl text-drea-gold-light font-medium">
-                  {DREA_BRAND.contact.headline}
-                </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2">
-                  <MapPin className="w-4 h-4 text-drea-gold shrink-0" />
+              <div className="space-y-2.5 pt-1 text-sm text-white/85">
+                <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                  <MapPin className="w-4 h-4 text-white/60 shrink-0" />
                   <span>{DREA_BRAND.contact.showroom}</span>
                 </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2">
-                  <Clock className="w-4 h-4 text-drea-gold shrink-0" />
+                <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                  <Clock className="w-4 h-4 text-white/60 shrink-0" />
                   <span>{DREA_BRAND.contact.schedule}</span>
                 </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2">
-                  <Sparkles className="w-4 h-4 text-drea-gold shrink-0" />
+                <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-white/60 shrink-0" />
                   <span>{DREA_BRAND.contact.advisory}</span>
                 </p>
               </div>
             </div>
 
-            {/* Tarjetas de Contacto Directo & Redes Sociales */}
+            {/* Tarjetas de Contacto Directo & Redes Sociales (Bordes sobrios blanco/platino, sin tonos amarillos) */}
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Tarjeta WhatsApp */}
-              <div className="bg-white/5 border border-drea-gold/30 hover:border-drea-gold p-7 flex flex-col justify-between space-y-5 transition-colors">
+              <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-7 flex flex-col justify-between space-y-6 transition-colors">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-drea-gold text-xs uppercase tracking-editorial font-semibold">
-                    <Phone className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
+                    <Phone className="w-3.5 h-3.5 text-white/70" />
                     <span>WhatsApp Oficial</span>
                   </div>
-                  <h3 className="font-serif text-2xl font-semibold text-white">
+                  {/* Tipografía Sans-Serif geométrica (tabular-nums) para que los números queden 100% alineados */}
+                  <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wider tabular-nums text-white">
                     {DREA_BRAND.contact.whatsappDisplay}
                   </h3>
-                  <p className="text-xs text-white/75 leading-relaxed">
+                  <p className="text-xs text-white/65 leading-relaxed">
                     {DREA_BRAND.contact.advisory} · {DREA_BRAND.contact.schedule}
                   </p>
                 </div>
@@ -496,24 +469,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   href={DREA_BRAND.contact.whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-drea-burgundy hover:bg-drea-burgundy-deep text-white border border-drea-gold/40 text-xs uppercase tracking-editorial font-semibold transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-drea-burgundy hover:bg-drea-burgundy-dark text-white border border-white/15 text-xs uppercase tracking-editorial font-semibold transition-colors"
                 >
-                  <MessageCircle className="w-4 h-4 text-drea-gold-light" />
+                  <MessageCircle className="w-4 h-4 text-white" />
                   <span>Escribir por WhatsApp</span>
                 </a>
               </div>
 
               {/* Tarjeta Instagram */}
-              <div className="bg-white/5 border border-drea-gold/30 hover:border-drea-gold p-7 flex flex-col justify-between space-y-5 transition-colors">
+              <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-7 flex flex-col justify-between space-y-6 transition-colors">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-drea-gold text-xs uppercase tracking-editorial font-semibold">
-                    <Instagram className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
+                    <Instagram className="w-3.5 h-3.5 text-white/70" />
                     <span>Instagram Oficial</span>
                   </div>
-                  <h3 className="font-serif text-2xl font-semibold text-white">
+                  <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wide text-white">
                     {DREA_BRAND.contact.instagramHandle}
                   </h3>
-                  <p className="text-xs text-white/75 leading-relaxed">
+                  <p className="text-xs text-white/65 leading-relaxed">
                     {DREA_BRAND.contact.showroom} · {DREA_BRAND.contact.headline}
                   </p>
                 </div>
@@ -521,9 +494,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   href={DREA_BRAND.contact.instagramUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/30 text-xs uppercase tracking-editorial font-semibold transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/25 text-xs uppercase tracking-editorial font-semibold transition-colors"
                 >
-                  <Instagram className="w-4 h-4 text-drea-gold-light" />
+                  <Instagram className="w-4 h-4 text-white" />
                   <span>Seguir en Instagram</span>
                 </a>
               </div>
@@ -536,12 +509,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               © {new Date().getFullYear()} {DREA_BRAND.name} · Cúcuta. Todos los derechos
               reservados.
             </span>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 font-sans tabular-nums">
               <a
                 href={DREA_BRAND.contact.instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-drea-gold-light transition-colors"
+                className="hover:text-white transition-colors"
               >
                 Instagram ({DREA_BRAND.contact.instagramHandle})
               </a>
@@ -549,7 +522,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 href={DREA_BRAND.contact.whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-drea-gold-light transition-colors"
+                className="hover:text-white transition-colors"
               >
                 WhatsApp ({DREA_BRAND.contact.whatsappDisplay})
               </a>

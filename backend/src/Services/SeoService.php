@@ -54,7 +54,7 @@ final class SeoService
         } else {
             $title = 'DREA PERFUMES · Cúcuta | Boutique de Perfumería Exclusiva';
             $description = 'Boutique digital de perfumería selectiva, elegante y fácil de explorar. Marcas originales, entregas el mismo día en Cúcuta y envíos asegurados a toda Colombia.';
-            $imageUrl = "{$baseUrl}/api/productos/1/imagen";
+            $imageUrl = "{$baseUrl}/assets/brand/drea-logo.png";
             $canonicalUrl = $baseUrl;
             $ogType = 'website';
 
@@ -64,6 +64,8 @@ final class SeoService
                 'name'        => 'DREA PERFUMES',
                 'description' => $description,
                 'url'         => $baseUrl,
+                'logo'        => "{$baseUrl}/assets/brand/drea-logo.png",
+                'image'       => "{$baseUrl}/assets/brand/drea-logo.png",
                 'address'     => [
                     '@type'           => 'PostalAddress',
                     'addressLocality' => 'Cúcuta',

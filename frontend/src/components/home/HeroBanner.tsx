@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { BannerSlide, CatalogFiltersState } from '../../types/catalog';
 
 /**
@@ -11,7 +11,7 @@ import { BannerSlide, CatalogFiltersState } from '../../types/catalog';
 export const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
   {
     id: 1,
-    imageUrl: '/assets/banners/imagen1.webp',
+    imageUrl: '/assets/banners/imagen1.webp?v=2',
     eyebrow: 'DREA PERFUMES · CÚCUTA · COLECCIÓN 2026',
     title: 'Una selección de perfumes para cada estilo',
     subtitle:
@@ -24,11 +24,11 @@ export const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
   },
   {
     id: 2,
-    imageUrl: '/assets/banners/imagen2.webp',
+    imageUrl: '/assets/banners/imagen2.webp?v=2',
     eyebrow: 'PRIVATE SELECTION · SALE',
     title: 'Selección SALE en Perfumería Nicho, Diseñador y Árabe',
     subtitle:
-      'Descubre presentaciones regulares, testers y decants originales con privilegios exclusivos por tiempo limitado.',
+      'Descubre fragancias 100% originales y cofres de regalo con privilegios exclusivos por tiempo limitado.',
     ctaLabel: 'Explorar SALE',
     filterAction: {
       view: 'catalogo',
@@ -38,7 +38,7 @@ export const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
   },
   {
     id: 3,
-    imageUrl: '/assets/banners/imagen3.webp',
+    imageUrl: '/assets/banners/imagen3.webp?v=2',
     eyebrow: 'NOVEDADES & TENDENCIAS',
     title: 'Lanzamientos Recientes de Alta Perfumería',
     subtitle:
@@ -82,19 +82,23 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
   if (slides.length === 0) return null;
 
-  const currentSlide = slides[currentIndex];
-
   return (
     <section
-      className="relative w-full h-[460px] sm:h-[540px] lg:h-[600px] overflow-hidden bg-drea-ink select-none"
+      className="relative w-full h-[260px] sm:h-[420px] lg:h-[560px] overflow-hidden bg-drea-ink select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Imágenes del Carrusel (/assets/banners/imagen1.webp, imagen2.webp, imagen3.webp) */}
+      {/* Imágenes limpias del Carrusel (Sin textos HTML ni velos encima) */}
       {slides.map((slide, idx) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+          onClick={() =>
+            onActionClick({
+              view: 'catalogo',
+              ...slide.filterAction,
+            })
+          }
+          className={`absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out ${
             idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
           }`}
         >
@@ -103,69 +107,32 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             alt={slide.title}
             className="w-full h-full object-cover object-center"
           />
-          {/* Velo gradual oscuro/borgoña para garantizar lectura impecable de los textos */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25" />
         </div>
       ))}
 
-      {/* Contenido Editorial Superpuesto (Inspirado en Cartier / Mafer / Propuesta DREA) */}
-      <div className="relative z-20 max-w-7xl mx-auto h-full px-6 sm:px-12 flex flex-col justify-center">
-        <div className="max-w-2xl text-white space-y-4">
-          <span className="inline-block text-[11px] sm:text-xs tracking-editorial uppercase text-drea-gold-light font-semibold">
-            {currentSlide.eyebrow}
-          </span>
-
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-[1.1] text-white">
-            {currentSlide.title}
-          </h1>
-
-          <div className="w-24 h-[1.5px] bg-drea-gold" />
-
-          <p className="text-sm sm:text-base text-white/85 font-light leading-relaxed max-w-xl">
-            {currentSlide.subtitle}
-          </p>
-
-          <div className="pt-3">
-            <button
-              type="button"
-              onClick={() =>
-                onActionClick({
-                  view: 'catalogo',
-                  ...currentSlide.filterAction,
-                })
-              }
-              className="inline-flex items-center gap-3 px-7 py-3.5 text-xs uppercase tracking-editorial font-semibold bg-drea-gold-gradient text-drea-ink hover:brightness-105 transition-all shadow-gold-glow"
-            >
-              <span>{currentSlide.ctaLabel}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Controles Laterales (< y > como en los pantallazos de referencia) */}
+      {/* Controles Laterales (< y >) e Indicadores Inferiores */}
       {slides.length > 1 && (
         <>
           <button
             type="button"
             onClick={prevSlide}
             aria-label="Banner anterior"
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-colors shadow-md"
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 bg-white/90 hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-colors shadow-md"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             type="button"
             onClick={nextSlide}
             aria-label="Siguiente banner"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-colors shadow-md"
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 bg-white/90 hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-colors shadow-md"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Indicadores Inferiores */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5">
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5">
             {slides.map((slide, idx) => (
               <button
                 key={slide.id}

@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS `piramide_olfativa` (
 CREATE TABLE IF NOT EXISTS `variantes_producto` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `producto_id` INT UNSIGNED NOT NULL,
-    `tamano_ml` INT UNSIGNED NOT NULL COMMENT 'Ej. 5, 10, 50, 100, 200',
-    `tipo_presentacion` ENUM('Regular', 'Tester', 'Decant', 'Kit') NOT NULL DEFAULT 'Regular',
+    `tamano_ml` INT UNSIGNED NOT NULL COMMENT 'Ej. 50, 75, 100, 125, 200',
+    `tipo_presentacion` ENUM('Regular', 'Kit') NOT NULL DEFAULT 'Regular',
     `sku` VARCHAR(50) NULL,
     `precio_base` DECIMAL(12, 2) NOT NULL,
     `disponible` BOOLEAN NOT NULL DEFAULT TRUE,

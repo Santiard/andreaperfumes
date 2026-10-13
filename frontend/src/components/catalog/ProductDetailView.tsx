@@ -26,6 +26,7 @@ interface ProductDetailViewProps {
   relatedProductos: Producto[];
   sendingWhatsapp: boolean;
   onNavigate: (next: CatalogFiltersState) => void;
+  onGoBack?: () => void;
   onOpenProduct: (producto: Producto) => void;
   onAddToCart: (
     producto: Producto,
@@ -47,6 +48,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   relatedProductos,
   sendingWhatsapp,
   onNavigate,
+  onGoBack,
   onOpenProduct,
   onAddToCart,
   onDirectWhatsApp,
@@ -165,9 +167,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
              SECCIÓN PRINCIPAL DE 2 COLUMNAS: IMAGEN A LA IZQUIERDA | DETALLES A LA DERECHA
         =================================================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start">
-          {/* COLUMNA IZQUIERDA: IMAGEN ÚNICA DEL PRODUCTO CON BADGE DE DESCUENTO */}
+          {/* COLUMNA IZQUIERDA: IMAGEN ÚNICA DEL PRODUCTO CON BADGE DE DESCUENTO (Sin marco gris interno) */}
           <div className="lg:col-span-6 lg:sticky lg:top-28">
-            <div className="relative bg-white border border-drea-canvas-border p-6 sm:p-10 shadow-editorial">
+            <div className="relative bg-[#F7F6F4] border border-[#EAE8E4] aspect-[4/5] flex items-center justify-center overflow-hidden group">
               {/* Distintivos superiores sobre la imagen (SALE -15% / Destacado) */}
               <div className="absolute top-5 left-5 right-5 z-10 flex items-center justify-between pointer-events-none">
                 <div>
@@ -180,7 +182,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
                 <div>
                   {producto.destacado && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-drea-canvas border border-drea-gold/50 text-[10px] uppercase tracking-editorial font-semibold text-drea-burgundy">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 border border-drea-gold/50 text-[10px] uppercase tracking-editorial font-semibold text-drea-burgundy">
                       <Flame className="w-3.5 h-3.5 fill-drea-burgundy text-drea-burgundy" />
                       <span>Destacado</span>
                     </span>
@@ -188,14 +190,12 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
               </div>
 
-              {/* Lienzo Warm Alabaster para la botella */}
-              <div className="w-full h-[380px] sm:h-[480px] bg-drea-canvas flex items-center justify-center overflow-hidden p-6 group">
-                <img
-                  src={producto.imagen.url}
-                  alt={producto.nombre}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
+              {/* Imagen en fondo blanco fundida con mix-blend-multiply (igual que en el Catálogo) */}
+              <img
+                src={producto.imagen.url}
+                alt={producto.nombre}
+                className="w-full h-full object-contain p-8 sm:p-12 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
             </div>
           </div>
 
@@ -234,15 +234,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onNavigate({
-                    view: 'catalogo',
-                    tituloSeccion: 'Catálogo Completo',
-                  })
+                  onGoBack
+                    ? onGoBack()
+                    : onNavigate({
+                        view: 'catalogo',
+                        tituloSeccion: 'Catálogo Completo',
+                      })
                 }
                 className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-drea-burgundy hover:underline"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Catálogo</span>
+                <span>Volver</span>
               </button>
             </div>
 
@@ -463,7 +465,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 {openDescription && (
                   <div className="mt-3 space-y-4 text-xs sm:text-sm text-drea-ink-body leading-relaxed">
                     <h3 className="font-serif text-xl font-semibold text-drea-ink">
-                      ¿A qué huele {producto.nombre}?
+                      Conoce un poco más sobre {producto.nombre}
                     </h3>
                     <p>
                       {producto.descripcion ??
@@ -607,32 +609,32 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {filteredRelated.map((rel) => {
                 const relVar = rel.variantes[0];
                 return (
                   <article
                     key={rel.id}
                     onClick={() => onOpenProduct(rel)}
-                    className="bg-white border border-drea-canvas-border hover:border-drea-gold hover:shadow-luxury transition-all p-5 cursor-pointer group flex flex-col justify-between"
+                    className="bg-white border border-drea-canvas-border hover:border-drea-gold hover:shadow-luxury transition-all p-3 sm:p-5 cursor-pointer group flex flex-col justify-between"
                   >
                     <div>
-                      <div className="h-48 bg-drea-canvas flex items-center justify-center p-4 mb-4 overflow-hidden">
+                      <div className="aspect-square sm:aspect-[4/5] bg-[#F7F6F4] flex items-center justify-center p-3 sm:p-5 mb-3 sm:mb-4 overflow-hidden">
                         <img
                           src={rel.imagen.url}
                           alt={rel.nombre}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
-                      <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-drea-ink group-hover:text-drea-burgundy text-center">
+                      <h3 className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-wider text-drea-ink group-hover:text-drea-burgundy text-center line-clamp-1">
                         {rel.nombre} · {rel.marca.nombre}
                       </h3>
-                      <p className="text-[11px] text-drea-ink-muted text-center font-serif italic mt-1">
+                      <p className="text-[10px] sm:text-[11px] text-drea-ink-muted text-center font-serif italic mt-0.5 sm:mt-1">
                         {rel.concentracion} · {rel.genero}
                       </p>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-drea-canvas-border text-center">
-                      <span className="text-sm font-bold text-drea-ink">
+                    <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-drea-canvas-border text-center">
+                      <span className="text-xs sm:text-sm font-bold text-drea-ink">
                         {relVar ? `${relVar.precio_final_cop} COP` : 'Consultar'}
                       </span>
                     </div>

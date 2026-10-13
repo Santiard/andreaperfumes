@@ -1,0 +1,7 @@
+Coloca en esta carpeta las imágenes de prueba para los productos locales:
+
+- producto1.webp  ->  Khamrah · Lattafa (ID 1)
+- producto2.webp  ->  Sauvage Eau de Parfum · Dior (ID 2)
+- producto3.webp  ->  Le Male Elixir · Jean Paul Gaultier (ID 3)
+
+(También acepta .png o .jpg si aún no las has pasado a .webp)

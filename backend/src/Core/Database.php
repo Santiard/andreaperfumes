@@ -31,6 +31,9 @@ final class Database
                     PDO::ATTR_EMULATE_PREPARES   => false,
                     PDO::ATTR_STRINGIFY_FETCHES  => false,
                 ]);
+
+                // Limpieza automática de semillas antiguas de Decants / Testers en volúmenes locales existentes
+                self::$instance->exec("DELETE FROM variantes_producto WHERE tipo_presentacion IN ('Decant', 'Tester')");
             } catch (PDOException $e) {
                 throw new HttpException('Error de conexión con la base de datos: ' . $e->getMessage(), 500);
             }
