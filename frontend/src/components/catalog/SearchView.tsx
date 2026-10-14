@@ -216,7 +216,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       <img
                         src={prod.imagen.url}
                         alt={prod.nombre}
-                        className="w-full h-full object-contain p-4 sm:p-7 mix-blend-multiply group-hover:scale-105 transition-transform duration-500 ease-out"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
                       />
                     </div>
 

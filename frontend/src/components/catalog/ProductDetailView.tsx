@@ -190,11 +190,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
               </div>
 
-              {/* Imagen en fondo blanco fundida con mix-blend-multiply (igual que en el Catálogo) */}
+              {/* Imagen adaptada al marco editorial con object-cover */}
               <img
                 src={producto.imagen.url}
                 alt={producto.nombre}
-                className="w-full h-full object-contain p-8 sm:p-12 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
               />
             </div>
           </div>
@@ -619,11 +619,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                     className="bg-white border border-drea-canvas-border hover:border-drea-gold hover:shadow-luxury transition-all p-3 sm:p-5 cursor-pointer group flex flex-col justify-between"
                   >
                     <div>
-                      <div className="aspect-square sm:aspect-[4/5] bg-[#F7F6F4] flex items-center justify-center p-3 sm:p-5 mb-3 sm:mb-4 overflow-hidden">
+                      <div className="aspect-square sm:aspect-[4/5] bg-[#F7F6F4] flex items-center justify-center mb-3 sm:mb-4 overflow-hidden">
                         <img
                           src={rel.imagen.url}
                           alt={rel.nombre}
-                          className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                       <h3 className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-wider text-drea-ink group-hover:text-drea-burgundy text-center line-clamp-1">

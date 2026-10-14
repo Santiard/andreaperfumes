@@ -102,14 +102,9 @@ export const Header: React.FC<HeaderProps> = ({
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <div className="flex flex-col">
-            <span className="font-serif text-2xl sm:text-3xl tracking-wider font-semibold text-drea-ink leading-none">
-              DREA
-            </span>
-            <span className="font-sans text-[8.5px] sm:text-[9px] tracking-[0.16em] sm:tracking-widest uppercase text-drea-burgundy font-semibold mt-1 whitespace-nowrap">
-              PERFUMES · CÚCUTA
-            </span>
-          </div>
+          <span className="font-serif text-2xl sm:text-3xl tracking-wider font-semibold text-drea-ink leading-none">
+            DREA
+          </span>
         </button>
 
         {/* Navegación Principal Desktop */}

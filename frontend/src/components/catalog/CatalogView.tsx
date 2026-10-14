@@ -1040,11 +1040,11 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                           ) : null}
                         </div>
 
-                        {/* Imagen en fondo blanco integrada al lienzo (mix-blend-multiply funde el blanco puro con #F7F6F4) */}
+                        {/* Imagen adaptada hasta el borde del lienzo con object-cover */}
                         <img
                           src={prod.imagen.url}
                           alt={`${prod.marca.nombre} - ${prod.nombre}`}
-                          className="w-full h-full object-contain p-3 sm:p-8 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                         />
 
                         {/* Barra sutil de acción rápida al hacer hover en desktop */}

@@ -218,134 +218,141 @@ export const HomeView: React.FC<HomeViewProps> = ({
               return (
                 <article
                   key={prod.id}
-                  className="snap-start shrink-0 w-[275px] sm:w-[295px] bg-white border border-drea-canvas-border hover:border-drea-gold hover:shadow-luxury transition-all duration-300 flex flex-col justify-between p-5 group"
+                  className="snap-start shrink-0 w-[275px] sm:w-[295px] bg-white border border-drea-canvas-border hover:border-drea-gold hover:shadow-luxury transition-all duration-300 flex flex-col justify-between overflow-hidden group"
                 >
-                  <div>
-                    {/* Distintivos superiores */}
-                    <div className="flex items-center justify-between min-h-[24px] mb-2">
-                      <div>
-                        {prod.tiene_promocion ? (
-                          <span className="inline-block px-2.5 py-0.5 rounded-full bg-drea-burgundy text-white text-[10px] font-bold uppercase tracking-wider">
-                            {discountBadgeText}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] uppercase tracking-editorial text-drea-ink-muted font-semibold">
-                            {prod.marca.nombre}
-                          </span>
-                        )}
-                      </div>
-                      <Flame className="w-4 h-4 fill-drea-burgundy text-drea-burgundy" />
-                    </div>
-
-                    {/* Imagen del Perfume (Funde el fondo blanco igual que en el Catálogo sin recuadro gris) */}
+                  <div className="flex flex-col flex-1">
+                    {/* Imagen del Perfume adaptada hasta el borde del contenedor */}
                     <div
                       onClick={() => openProductDetail(prod)}
-                      className="relative aspect-[4/5] w-full bg-[#F7F6F4] flex items-center justify-center mb-4 overflow-hidden cursor-pointer"
+                      className="relative aspect-square sm:aspect-[4/5] w-full bg-[#F7F6F4] overflow-hidden cursor-pointer"
                     >
+                      {/* Distintivos superiores flotantes sobre la imagen */}
+                      <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between pointer-events-none">
+                        <div>
+                          {prod.tiene_promocion ? (
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-drea-burgundy text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                              {discountBadgeText}
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-xs text-[10px] uppercase tracking-editorial text-drea-ink font-semibold shadow-xs border border-white/60">
+                              {prod.marca.nombre}
+                            </span>
+                          )}
+                        </div>
+                        <div className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-xs flex items-center justify-center shadow-xs border border-white/60">
+                          <Flame className="w-3.5 h-3.5 fill-drea-burgundy text-drea-burgundy" />
+                        </div>
+                      </div>
+
                       <img
                         src={prod.imagen.url}
                         alt={prod.nombre}
-                        className="w-full h-full object-contain p-6 mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
 
-                    {/* Selector rápido de tamaños en la tarjeta */}
-                    {variantsList.length > 0 && (
-                      <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
-                        {variantsList.map((v) => {
-                          const isCurrent = selectedVar?.id === v.id;
-                          return (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={() =>
-                                setSelectedVariantByProd((prev) => ({
-                                  ...prev,
-                                  [prod.id]: v.id,
-                                }))
-                              }
-                              className={`text-[11px] px-2 py-0.5 transition-colors ${
-                                isCurrent
-                                  ? 'font-bold text-drea-ink border-b-2 border-drea-burgundy'
-                                  : 'text-drea-ink-muted hover:text-drea-ink'
-                              }`}
-                            >
-                              {v.tamano_ml}ml
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Nombre y Familia */}
-                    <div className="text-center px-1">
-                      <h3
-                        onClick={() => openProductDetail(prod)}
-                        className="font-sans text-xs sm:text-sm font-bold uppercase tracking-wider text-drea-ink group-hover:text-drea-burgundy transition-colors cursor-pointer line-clamp-1"
-                      >
-                        {prod.nombre}
-                      </h3>
-                      <p className="text-[11px] text-drea-ink-muted mt-1 font-serif italic">
-                        {prod.marca.nombre} · {prod.concentracion}
-                        {prod.familia_olfativa ? ` · ${prod.familia_olfativa.nombre}` : ''}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Precio en COP y Botones */}
-                  <div className="mt-4 pt-3 border-t border-drea-canvas-border/70 text-center space-y-2.5">
-                    {selectedVar ? (
+                    {/* Contenido inferior con padding */}
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        {selectedVar.tiene_promocion ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-xs text-drea-ink-muted line-through">
-                              {selectedVar.precio_base_cop}
-                            </span>
-                            <span className="text-sm sm:text-base font-bold text-drea-ink">
-                              {selectedVar.precio_final_cop} COP
-                            </span>
-                          </div>
-                        ) : hasPriceRange && !chosenVarId ? (
-                          <div className="text-sm font-bold text-drea-ink">
-                            {formatCop(minPrice)} - {formatCop(maxPrice)} COP
-                          </div>
-                        ) : (
-                          <div className="text-sm sm:text-base font-bold text-drea-ink">
-                            {selectedVar.precio_final_cop} COP
+                        {/* Selector rápido de tamaños en la tarjeta */}
+                        {variantsList.length > 0 && (
+                          <div className="flex flex-wrap items-center justify-center gap-2 mb-2.5">
+                            {variantsList.map((v) => {
+                              const isCurrent = selectedVar?.id === v.id;
+                              return (
+                                <button
+                                  key={v.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedVariantByProd((prev) => ({
+                                      ...prev,
+                                      [prod.id]: v.id,
+                                    }))
+                                  }
+                                  className={`text-[11px] px-2 py-0.5 transition-colors ${
+                                    isCurrent
+                                      ? 'font-bold text-drea-ink border-b-2 border-drea-burgundy'
+                                      : 'text-drea-ink-muted hover:text-drea-ink'
+                                  }`}
+                                >
+                                  {v.tamano_ml}ml
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
+
+                        {/* Nombre y Familia */}
+                        <div className="text-center px-1">
+                          <h3
+                            onClick={() => openProductDetail(prod)}
+                            className="font-sans text-xs sm:text-sm font-bold uppercase tracking-wider text-drea-ink group-hover:text-drea-burgundy transition-colors cursor-pointer line-clamp-1"
+                          >
+                            {prod.nombre}
+                          </h3>
+                          <p className="text-[11px] text-drea-ink-muted mt-1 font-serif italic">
+                            {prod.marca.nombre} · {prod.concentracion}
+                            {prod.familia_olfativa ? ` · ${prod.familia_olfativa.nombre}` : ''}
+                          </p>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-sm font-bold text-drea-ink">Consultar</div>
-                    )}
 
-                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-drea-ink-muted">
-                      <span>
-                        {variantsList.length}{' '}
-                        {variantsList.length === 1 ? 'Opción disponible' : 'Opciones disponibles'}
-                      </span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-drea-gold inline-block" />
-                    </div>
+                      {/* Precio en COP y Botones */}
+                      <div className="mt-4 pt-3 border-t border-drea-canvas-border/70 text-center space-y-2.5">
+                        {selectedVar ? (
+                          <div>
+                            {selectedVar.tiene_promocion ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="text-xs text-drea-ink-muted line-through">
+                                  {selectedVar.precio_base_cop}
+                                </span>
+                                <span className="text-sm sm:text-base font-bold text-drea-ink">
+                                  {selectedVar.precio_final_cop} COP
+                                </span>
+                              </div>
+                            ) : hasPriceRange && !chosenVarId ? (
+                              <div className="text-sm font-bold text-drea-ink">
+                                {formatCop(minPrice)} - {formatCop(maxPrice)} COP
+                              </div>
+                            ) : (
+                              <div className="text-sm sm:text-base font-bold text-drea-ink">
+                                {selectedVar.precio_final_cop} COP
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-sm font-bold text-drea-ink">Consultar</div>
+                        )}
 
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => onAddToCart(prod, selectedVar)}
-                        className="drea-btn-dark py-2 px-2.5 text-[10px]"
-                      >
-                        + Carrito
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!selectedVar || sendingWhatsapp}
-                        onClick={() =>
-                          selectedVar &&
-                          onDirectWhatsApp([{ variante_id: selectedVar.id, cantidad: 1 }])
-                        }
-                        className="drea-btn-primary py-2 px-2.5 text-[10px]"
-                      >
-                        Comprar
-                      </button>
+                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-drea-ink-muted">
+                          <span>
+                            {variantsList.length}{' '}
+                            {variantsList.length === 1 ? 'Opción disponible' : 'Opciones disponibles'}
+                          </span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-drea-gold inline-block" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => onAddToCart(prod, selectedVar)}
+                            className="drea-btn-dark py-2 px-2.5 text-[10px]"
+                          >
+                            + Carrito
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!selectedVar || sendingWhatsapp}
+                            onClick={() =>
+                              selectedVar &&
+                              onDirectWhatsApp([{ variante_id: selectedVar.id, cantidad: 1 }])
+                            }
+                            className="drea-btn-primary py-2 px-2.5 text-[10px]"
+                          >
+                            Comprar
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </article>
