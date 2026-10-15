@@ -77,8 +77,14 @@ final class CatalogoController
             throw new HttpException('ID de producto inválido.', 400);
         }
 
-        // 1. Si colocaste un archivo en frontend/public/assets/productos/producto{id}.{webp,png,jpg,jpeg}, se sirve directo
-        $localDir = dirname(__DIR__, 3) . '/frontend/public/assets/productos';
+        // 1. Si colocaste un archivo en assets/productos/producto{id}.{webp,png,jpg,jpeg}, se sirve directo
+        $dirCandidates = [
+            dirname(__DIR__, 3) . '/frontend/public/assets/productos',
+            dirname(__DIR__, 2) . '/public/assets/productos',
+            dirname(__DIR__, 2) . '/assets/productos',
+            dirname(__DIR__, 1) . '/assets/productos',
+        ];
+
         $extensions = [
             'webp' => 'image/webp',
             'png'  => 'image/png',
@@ -86,15 +92,20 @@ final class CatalogoController
             'jpeg' => 'image/jpeg',
         ];
 
-        foreach ($extensions as $ext => $mimeType) {
-            $candidate = "{$localDir}/producto{$id}.{$ext}";
-            if (is_file($candidate) && is_readable($candidate)) {
-                $binary = (string) file_get_contents($candidate);
-                $size = strlen($binary);
-                $mtime = (int) filemtime($candidate);
-                $etag = sha1("local-{$id}-{$mtime}-{$size}");
-                Response::webpBinary($binary, $mimeType, $size, $etag);
-                return;
+        foreach ($dirCandidates as $localDir) {
+            if (!is_dir($localDir)) {
+                continue;
+            }
+            foreach ($extensions as $ext => $mimeType) {
+                $candidate = "{$localDir}/producto{$id}.{$ext}";
+                if (is_file($candidate) && is_readable($candidate)) {
+                    $binary = (string) file_get_contents($candidate);
+                    $size = strlen($binary);
+                    $mtime = (int) filemtime($candidate);
+                    $etag = sha1("local-{$id}-{$mtime}-{$size}");
+                    Response::webpBinary($binary, $mimeType, $size, $etag);
+                    return;
+                }
             }
         }
 

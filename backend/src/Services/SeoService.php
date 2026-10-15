@@ -98,11 +98,20 @@ final class SeoService
     <script type="application/ld+json">{$jsonLdScript}</script>
 HTML;
 
-        $frontendIndex = dirname(__DIR__, 3) . '/frontend/dist/index.html';
-        if (is_file($frontendIndex) && is_readable($frontendIndex)) {
-            $html = (string) file_get_contents($frontendIndex);
-            $html = (string) preg_replace('/<title>.*?<\/title>/is', '', $html);
-            return str_ireplace('</head>', $seoBlock . "\n</head>", $html);
+        $frontendCandidates = [
+            dirname(__DIR__, 3) . '/frontend/dist/index.html',
+            dirname(__DIR__, 2) . '/frontend/dist/index.html',
+            dirname(__DIR__, 2) . '/dist/index.html',
+            dirname(__DIR__, 2) . '/index.html',
+            dirname(__DIR__, 1) . '/index.html',
+        ];
+
+        foreach ($frontendCandidates as $frontendIndex) {
+            if (is_file($frontendIndex) && is_readable($frontendIndex)) {
+                $html = (string) file_get_contents($frontendIndex);
+                $html = (string) preg_replace('/<title>.*?<\/title>/is', '', $html);
+                return str_ireplace('</head>', $seoBlock . "\n</head>", $html);
+            }
         }
 
         return <<<HTML
