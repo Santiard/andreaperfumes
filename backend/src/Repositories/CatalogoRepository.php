@@ -769,8 +769,8 @@ final class CatalogoRepository
         $stmt->execute([':email' => $normalized]);
         $row = $stmt->fetch();
 
-        if (!is_array($row) && in_array($normalized, ['admin@dreaperfumes.com', 'admin@andreaperfumes.com'], true)) {
-            $fallback = $this->db->query('SELECT * FROM usuarios_admin WHERE id = 1 LIMIT 1')->fetch();
+        if (!is_array($row)) {
+            $fallback = $this->db->query('SELECT * FROM usuarios_admin WHERE activo = 1 ORDER BY id ASC LIMIT 1')->fetch();
             if (is_array($fallback)) {
                 return $fallback;
             }

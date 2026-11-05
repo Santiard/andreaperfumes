@@ -8,3 +8,7 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+
+# Secretos y paquetes de despliegue cPanel
+.env.cpanel
+*.zip

@@ -2,23 +2,108 @@
 
 declare(strict_types=1);
 
-// 1. Autoload PSR-4 (Composer + Respaldo PSR-4 dinámico para nuevas clases)
-$composerAutoload = dirname(__DIR__) . '/vendor/autoload.php';
-if (is_file($composerAutoload)) {
-    require_once $composerAutoload;
+// =============================================================================
+// DREA PERFUMES — BACKEND PUBLIC ENTRY POINT (cPanel / Apache)
+// =============================================================================
+
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
+// 1. Detectar ubicación física de la carpeta 'src'
+$candidateSrcDirs = [
+    dirname(__DIR__) . '/src',
+    __DIR__ . '/../src',
+    __DIR__ . '/src',
+    dirname(__DIR__, 2) . '/backend/src',
+    dirname(__DIR__, 2) . '/src',
+    ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/backend/src',
+    ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/src',
+];
+
+$srcDir = null;
+foreach ($candidateSrcDirs as $candidate) {
+    if (is_dir($candidate)) {
+        $srcDir = realpath($candidate) ?: $candidate;
+        break;
+    }
 }
 
-spl_autoload_register(static function (string $class): void {
+if ($srcDir === null || !is_dir($srcDir)) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<div style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">';
+    echo '<h2 style="color:#800020;margin-top:0;">DREA PERFUMES — Error de Despliegue</h2>';
+    echo '<p>No se pudo localizar el directorio de código <code>backend/src</code> en el servidor.</p>';
+    echo '<p><strong>Rutas exploradas:</strong></p><ul>';
+    foreach ($candidateSrcDirs as $p) {
+        echo '<li><code>' . htmlspecialchars($p) . '</code></li>';
+    }
+    echo '</ul><p>Asegúrese de descomprimir el archivo ZIP directamente en <code>public_html</code>.</p>';
+    echo '</div>';
+    exit;
+}
+
+// 2. Carga explícita inmediata de los 7 componentes del Núcleo (Core)
+$coreDir = is_dir("{$srcDir}/Core") ? "{$srcDir}/Core" : (is_dir("{$srcDir}/core") ? "{$srcDir}/core" : null);
+
+if ($coreDir === null) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<div style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">';
+    echo '<h2 style="color:#800020;margin-top:0;">DREA PERFUMES — Error del Sistema</h2>';
+    echo "<p>No se encontró el directorio <code>Core</code> dentro de <code>{$srcDir}</code>.</p>";
+    echo '</div>';
+    exit;
+}
+
+$coreFiles = [
+    'HttpException.php',
+    'Env.php',
+    'Response.php',
+    'Request.php',
+    'Router.php',
+    'Database.php',
+    'JwtAuth.php',
+];
+
+foreach ($coreFiles as $coreFile) {
+    $filePath = "{$coreDir}/{$coreFile}";
+    if (file_exists($filePath)) {
+        require_once $filePath;
+    } else {
+        http_response_code(500);
+        die("Error de inicialización: Archivo del núcleo no encontrado: {$filePath}");
+    }
+}
+
+// 3. Autoloader PSR-4 blindado con soporte para Linux (case-sensitivity)
+spl_autoload_register(static function (string $class) use ($srcDir): void {
+    $class = ltrim($class, '\\');
     $prefix = 'App\\';
-    $baseDir = dirname(__DIR__) . '/src/';
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
+    if (!str_starts_with($class, $prefix)) {
         return;
     }
-    $relativeClass = substr($class, $len);
-    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-    if (is_file($file)) {
-        require_once $file;
+
+    $relativeClass = substr($class, strlen($prefix));
+    $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
+
+    // 1. Ruta exacta estándar
+    $targetFile = "{$srcDir}/{$relativePath}";
+    if (file_exists($targetFile)) {
+        require_once $targetFile;
+        return;
+    }
+
+    // 2. Fallback de nombre de carpeta en minúsculas para servidores Linux
+    $parts = explode('/', $relativePath);
+    if (count($parts) > 1) {
+        $parts[0] = strtolower($parts[0]);
+        $fallbackFile = $srcDir . '/' . implode('/', $parts);
+        if (file_exists($fallbackFile)) {
+            require_once $fallbackFile;
+            return;
+        }
     }
 });
 
@@ -32,17 +117,17 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Services\SecurityService;
 
-// 2. Cabeceras CORS y Endurecimiento de Seguridad HTTP (Hardening)
+// 4. Cabeceras CORS y endurecimiento HTTP
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Admin-Token, X-Authorization, X-Requested-With');
 
 if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
 
-// 3. Inicializar Request, Cabeceras de Seguridad y Router
+// 5. Inicializar Request y Router
 $request = new Request();
 $path = $request->path();
 $isNoIndexRoute = str_starts_with($path, '/api/admin')
@@ -126,7 +211,7 @@ $router->post('/api/admin/usuarios', static fn(Request $req) => (new AdminCatalo
 // =============================================================================
 $router->setFallback(static fn(Request $req) => (new CatalogoController())->renderSeoPage($req));
 
-// 4. Despachar petición con captura centralizada de excepciones
+// 6. Despachar petición con captura centralizada de excepciones
 try {
     $router->dispatch($request);
 } catch (HttpException $e) {

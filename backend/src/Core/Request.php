@@ -90,14 +90,57 @@ final class Request
 
     public function bearerToken(): ?string
     {
-        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-        if ($header === '' && function_exists('getallheaders')) {
+        $candidates = [
+            $_SERVER['HTTP_AUTHORIZATION'] ?? '',
+            $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '',
+            $_SERVER['REDIRECT_REDIRECT_HTTP_AUTHORIZATION'] ?? '',
+            $_SERVER['HTTP_X_ADMIN_TOKEN'] ?? '',
+            $_SERVER['REDIRECT_HTTP_X_ADMIN_TOKEN'] ?? '',
+            $_SERVER['HTTP_X_AUTHORIZATION'] ?? '',
+            $_SERVER['HTTP_TOKEN'] ?? '',
+        ];
+
+        if (function_exists('getallheaders')) {
             $headers = getallheaders();
-            $header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+            if (is_array($headers)) {
+                foreach ($headers as $k => $v) {
+                    $lower = strtolower((string) $k);
+                    if (in_array($lower, ['authorization', 'x-admin-token', 'x-authorization', 'token'], true)) {
+                        $candidates[] = (string) $v;
+                    }
+                }
+            }
         }
-        if (preg_match('/Bearer\s+(\S+)/i', (string) $header, $matches)) {
-            return $matches[1];
+
+        if (function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+            if (is_array($headers)) {
+                foreach ($headers as $k => $v) {
+                    $lower = strtolower((string) $k);
+                    if (in_array($lower, ['authorization', 'x-admin-token', 'x-authorization', 'token'], true)) {
+                        $candidates[] = (string) $v;
+                    }
+                }
+            }
         }
+
+        foreach ($candidates as $raw) {
+            $raw = trim((string) $raw);
+            if ($raw === '') {
+                continue;
+            }
+            if (preg_match('/^Bearer\s+(\S+)$/i', $raw, $matches)) {
+                return $matches[1];
+            }
+            if (!str_contains($raw, ' ')) {
+                return $raw;
+            }
+        }
+
+        if (!empty($_GET['token'])) {
+            return (string) $_GET['token'];
+        }
+
         return null;
     }
 

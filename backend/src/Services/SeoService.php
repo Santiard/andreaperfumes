@@ -100,10 +100,15 @@ HTML;
 
         $frontendCandidates = [
             dirname(__DIR__, 3) . '/frontend/dist/index.html',
+            dirname(__DIR__, 3) . '/dist/index.html',
+            dirname(__DIR__, 3) . '/index.html',
             dirname(__DIR__, 2) . '/frontend/dist/index.html',
             dirname(__DIR__, 2) . '/dist/index.html',
             dirname(__DIR__, 2) . '/index.html',
             dirname(__DIR__, 1) . '/index.html',
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/frontend/dist/index.html',
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/dist/index.html',
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/index.html',
         ];
 
         foreach ($frontendCandidates as $frontendIndex) {

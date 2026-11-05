@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Grid,
   LayoutList,
@@ -137,6 +139,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   ].filter(Boolean).length;
 
   const currentPerPage = filters.per_page ?? 30;
+  const currentPage = Math.max(1, filters.page ?? 1);
+  const totalPages = Math.max(1, Math.ceil(totalProductos / currentPerPage));
+  const rangeStart = totalProductos > 0 ? (currentPage - 1) * currentPerPage + 1 : 0;
+  const rangeEnd = Math.min(currentPage * currentPerPage, totalProductos);
   const currentSort = filters.orden ?? 'destacados';
 
   // Panel de filtros reutilizable en Desktop Sidebar y Mobile Drawer
@@ -830,7 +836,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-drea-canvas-border">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="text-[11px] sm:text-xs font-medium text-drea-ink tracking-wide">
-                  {productos.length} de {totalProductos}{' '}
+                  {totalProductos > 0 ? `${rangeStart}–${rangeEnd}` : 0} de {totalProductos}{' '}
                   {totalProductos === 1 ? 'fragancia' : 'fragancias'}
                 </span>
 
@@ -1166,6 +1172,104 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     </article>
                   );
                 })}
+              </div>
+            )}
+
+            {/* =================================================================
+                PIE DE PÁGINA DE PAGINACIÓN DEL CATÁLOGO PÚBLICO (CENTRADO Y LIBRE DEL BOTÓN FLOTANTE DE WHATSAPP)
+            ================================================================= */}
+            {!loading && totalProductos > 0 && (
+              <div className="mt-10 pt-8 pb-24 sm:pb-20 border-t border-drea-canvas-border flex flex-col items-center justify-center text-center gap-4">
+                <p className="text-xs text-drea-ink-muted tracking-wide">
+                  Mostrando{' '}
+                  <strong className="font-semibold text-drea-ink">{rangeStart}</strong> –{' '}
+                  <strong className="font-semibold text-drea-ink">{rangeEnd}</strong> de{' '}
+                  <strong className="font-semibold text-drea-ink">{totalProductos}</strong>{' '}
+                  {totalProductos === 1 ? 'fragancia' : 'fragancias'}
+                </p>
+
+                {totalPages > 1 && (
+                  <nav
+                    aria-label="Paginación del catálogo"
+                    className="flex flex-wrap items-center justify-center gap-1.5"
+                  >
+                    <button
+                      type="button"
+                      disabled={currentPage <= 1}
+                      onClick={() =>
+                        onUpdateFilters({
+                          ...filters,
+                          view: 'catalogo',
+                          page: Math.max(1, currentPage - 1),
+                        })
+                      }
+                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:text-drea-burgundy disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Anterior</span>
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(
+                        (pageNum) =>
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          Math.abs(pageNum - currentPage) <= 2
+                      )
+                      .reduce<number[]>((acc, pageNum) => {
+                        if (acc.length > 0 && pageNum - acc[acc.length - 1] > 1) {
+                          acc.push(-1);
+                        }
+                        acc.push(pageNum);
+                        return acc;
+                      }, [])
+                      .map((pageNum, idx) =>
+                        pageNum === -1 ? (
+                          <span
+                            key={`ellipsis-${idx}`}
+                            className="px-2 text-xs text-drea-ink-muted"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            onClick={() =>
+                              onUpdateFilters({
+                                ...filters,
+                                view: 'catalogo',
+                                page: pageNum,
+                              })
+                            }
+                            className={`min-w-[36px] py-2 px-3 border text-xs font-semibold transition-colors ${
+                              pageNum === currentPage
+                                ? 'bg-drea-burgundy text-white border-drea-burgundy'
+                                : 'bg-white text-drea-ink border-drea-canvas-border hover:border-drea-burgundy hover:text-drea-burgundy'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      )}
+
+                    <button
+                      type="button"
+                      disabled={currentPage >= totalPages}
+                      onClick={() =>
+                        onUpdateFilters({
+                          ...filters,
+                          view: 'catalogo',
+                          page: Math.min(totalPages, currentPage + 1),
+                        })
+                      }
+                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:text-drea-burgundy disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                    >
+                      <span>Siguiente</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </nav>
+                )}
               </div>
             )}
           </div>

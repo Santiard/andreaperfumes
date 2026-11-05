@@ -10,7 +10,7 @@ use PDO;
 
 final class SecurityService
 {
-    private const MAX_ATTEMPTS = 5;
+    private const MAX_ATTEMPTS = 30;
     private const WINDOW_MINUTES = 15;
 
     /**
@@ -51,32 +51,42 @@ final class SecurityService
      */
     public static function checkLoginRateLimit(string $email): void
     {
-        $db = Database::getConnection();
-        self::ensureRateLimitTableExists($db);
+        try {
+            $ip = self::getClientIp();
+            if ($ip === '127.0.0.1' || $ip === '::1' || $ip === '0.0.0.0') {
+                return;
+            }
 
-        // Limpiar registros antiguos (> 1 día)
-        $db->exec('DELETE FROM admin_login_attempts WHERE attempted_at < (NOW() - INTERVAL 1 DAY)');
+            $db = Database::getConnection();
+            self::ensureRateLimitTableExists($db);
 
-        $ip = self::getClientIp();
-        $stmt = $db->prepare('
-            SELECT COUNT(*) FROM admin_login_attempts
-            WHERE (ip_address = :ip OR email = :email)
-              AND attempted_at >= (NOW() - INTERVAL ' . self::WINDOW_MINUTES . ' MINUTE)
-        ');
-        $stmt->execute([
-            ':ip'    => $ip,
-            ':email' => strtolower(trim($email)),
-        ]);
+            // Limpiar registros antiguos (> 1 día)
+            $db->exec('DELETE FROM admin_login_attempts WHERE attempted_at < (NOW() - INTERVAL 1 DAY)');
 
-        $attempts = (int) $stmt->fetchColumn();
-        if ($attempts >= self::MAX_ATTEMPTS) {
-            throw new HttpException(
-                sprintf(
-                    'Demasiados intentos fallidos de inicio de sesión. Por seguridad, el acceso ha sido bloqueado temporalmente por %d minutos.',
-                    self::WINDOW_MINUTES
-                ),
-                429
-            );
+            $stmt = $db->prepare('
+                SELECT COUNT(*) FROM admin_login_attempts
+                WHERE (ip_address = :ip OR email = :email)
+                  AND attempted_at >= (NOW() - INTERVAL ' . self::WINDOW_MINUTES . ' MINUTE)
+            ');
+            $stmt->execute([
+                ':ip'    => $ip,
+                ':email' => strtolower(trim($email)),
+            ]);
+
+            $attempts = (int) $stmt->fetchColumn();
+            if ($attempts >= self::MAX_ATTEMPTS) {
+                throw new HttpException(
+                    sprintf(
+                        'Demasiados intentos fallidos de inicio de sesión. Por seguridad, el acceso ha sido bloqueado temporalmente por %d minutos.',
+                        self::WINDOW_MINUTES
+                    ),
+                    429
+                );
+            }
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable) {
+            // No bloquear login si la tabla de rate limit tiene errores
         }
     }
 

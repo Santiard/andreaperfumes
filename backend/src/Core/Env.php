@@ -19,6 +19,9 @@ final class Env
             dirname(__DIR__, 2) . '/.env',
             dirname(__DIR__, 3) . '/.env',
             dirname(__DIR__, 1) . '/.env',
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/.env',
+            __DIR__ . '/../../.env',
+            __DIR__ . '/../../../.env',
         ];
 
         foreach ($paths as $path) {

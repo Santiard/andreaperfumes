@@ -77,12 +77,14 @@ final class CatalogoController
             throw new HttpException('ID de producto inválido.', 400);
         }
 
-        // 1. Si colocaste un archivo en assets/productos/producto{id}.{webp,png,jpg,jpeg}, se sirve directo
         $dirCandidates = [
+            dirname(__DIR__, 3) . '/assets/productos',
             dirname(__DIR__, 3) . '/frontend/public/assets/productos',
-            dirname(__DIR__, 2) . '/public/assets/productos',
+            dirname(__DIR__, 3) . '/frontend/dist/assets/productos',
             dirname(__DIR__, 2) . '/assets/productos',
+            dirname(__DIR__, 2) . '/public/assets/productos',
             dirname(__DIR__, 1) . '/assets/productos',
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/assets/productos',
         ];
 
         $extensions = [

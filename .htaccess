@@ -2,9 +2,18 @@
 # CONFIGURACIÓN APACHE / LITESPEED PARA CPANEL — DREA PERFUMES
 # =============================================================================
 
+DirectoryIndex index.php index.html
+
+# Pasar cabecera de autenticación Authorization / Bearer a PHP (Vital en cPanel / FastCGI / PHP-FPM)
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
+
+    # Pasar cabecera Authorization a PHP
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # 1. Proteger archivos sensibles y de configuración
     RewriteRule ^(\.env|\.git|composer\.|package\.|.*\.sql|docker-compose) - [F,L,NC]

@@ -16,11 +16,11 @@ final class Database
     public static function getConnection(): PDO
     {
         if (self::$instance === null) {
-            $host = (string) Env::get('DB_HOST', 'db');
+            $host = (string) Env::get('DB_HOST', 'localhost');
             $port = (string) Env::get('DB_PORT', '3306');
-            $dbname = (string) Env::get('DB_DATABASE', 'andreaperfumes');
-            $user = (string) Env::get('DB_USERNAME', 'andrea_user');
-            $pass = (string) Env::get('DB_PASSWORD', 'andrea_secret_pass');
+            $dbname = (string) Env::get('DB_DATABASE', 'dreaperfumes_db');
+            $user = (string) Env::get('DB_USERNAME', 'dreaperfumes_user');
+            $pass = (string) Env::get('DB_PASSWORD', '');
 
             $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $dbname);
 

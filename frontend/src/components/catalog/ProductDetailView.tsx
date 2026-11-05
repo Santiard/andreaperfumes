@@ -10,7 +10,6 @@ import {
   Minus,
   Plus,
   ShoppingBag,
-  Sparkles,
   Tag,
 } from 'lucide-react';
 import { DREA_BRAND } from '../../config/brand.config';
@@ -62,7 +61,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   );
   const [quantity, setQuantity] = useState<number>(1);
   const [openDescription, setOpenDescription] = useState<boolean>(true);
-  const [openPiramide, setOpenPiramide] = useState<boolean>(true);
 
   useEffect(() => {
     let active = true;
@@ -149,12 +147,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const discountBadgeText = promoVariant?.promocion?.etiqueta
     ? `SALE ${promoVariant.promocion.etiqueta}`
     : 'SALE';
-
-  const hasPiramideNotes =
-    producto.piramide_olfativa &&
-    ((producto.piramide_olfativa.Salida?.length ?? 0) > 0 ||
-      (producto.piramide_olfativa.Corazón?.length ?? 0) > 0 ||
-      (producto.piramide_olfativa.Fondo?.length ?? 0) > 0);
 
   const filteredRelated = relatedProductos
     .filter((p) => p.id !== producto.id)
@@ -519,56 +511,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Acordeón 2: Pirámide Olfativa (Notas de Salida, Corazón y Fondo) */}
-              {hasPiramideNotes && (
-                <div className="border-b border-drea-canvas-border pb-4">
-                  <button
-                    type="button"
-                    onClick={() => setOpenPiramide(!openPiramide)}
-                    className="w-full flex items-center justify-between py-2 text-left"
-                  >
-                    <span className="inline-flex items-center gap-2 text-xs uppercase tracking-editorial font-bold text-drea-burgundy">
-                      <Sparkles className="w-4 h-4" />
-                      <span>Pirámide Olfativa (Composición de Notas)</span>
-                    </span>
-                    {openPiramide ? (
-                      <ChevronUp className="w-4 h-4 text-drea-ink-muted" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-drea-ink-muted" />
-                    )}
-                  </button>
-
-                  {openPiramide && (
-                    <div className="mt-3 space-y-3 bg-white border border-drea-canvas-border p-4">
-                      {(['Salida', 'Corazón', 'Fondo'] as const).map((etapa) => {
-                        const notas = producto.piramide_olfativa?.[etapa] ?? [];
-                        if (notas.length === 0) return null;
-                        return (
-                          <div
-                            key={etapa}
-                            className="flex flex-col sm:flex-row sm:items-center gap-2 border-b last:border-b-0 border-drea-canvas-border/60 pb-2.5 last:pb-0"
-                          >
-                            <span className="w-28 shrink-0 text-[11px] uppercase tracking-wider font-bold text-drea-ink">
-                              Notas de {etapa}:
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {notas.map((n) => (
-                                <span
-                                  key={n.id}
-                                  className="px-2.5 py-1 bg-drea-canvas border border-drea-canvas-border text-xs text-drea-ink-body"
-                                >
-                                  {n.nombre}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Sello de Showroom y Atención Personalizada DREA PERFUMES */}
               <div className="bg-drea-ink text-white p-5 border border-drea-gold/40 space-y-2 text-xs">

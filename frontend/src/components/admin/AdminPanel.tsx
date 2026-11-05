@@ -15,6 +15,9 @@ import {
   Upload,
   ExternalLink,
   AlertCircle,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { DREA_BRAND } from '../../config/brand.config';
 
@@ -52,9 +55,33 @@ export const AdminPanel: React.FC = () => {
 
   // Data States
   const [productos, setProductos] = useState<any[]>([]);
+  const [prodLoading, setProdLoading] = useState<boolean>(false);
+  const [prodSearchInput, setProdSearchInput] = useState<string>('');
+  const [prodSearchQuery, setProdSearchQuery] = useState<string>('');
+  const [prodFilterMarca, setProdFilterMarca] = useState<string>('');
+  const [prodFilterGenero, setProdFilterGenero] = useState<string>('');
+  const [prodFilterEstado, setProdFilterEstado] = useState<string>('');
+  const [prodFilterCarrusel, setProdFilterCarrusel] = useState<string>('');
+  const [prodPage, setProdPage] = useState<number>(1);
+  const [prodPerPage, setProdPerPage] = useState<number>(10);
+  const [prodPagination, setProdPagination] = useState<{
+    total: number;
+    total_global: number;
+    total_destacados: number;
+    page: number;
+    per_page: number;
+    total_pages: number;
+  }>({
+    total: 0,
+    total_global: 0,
+    total_destacados: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 1,
+  });
+
   const [marcas, setMarcas] = useState<any[]>([]);
   const [familias, setFamilias] = useState<any[]>([]);
-  const [notas, setNotas] = useState<any[]>([]);
   const [todasVariantes, setTodasVariantes] = useState<any[]>([]);
   const [promociones, setPromociones] = useState<any[]>([]);
   const [contacto, setContacto] = useState<{
@@ -79,9 +106,6 @@ export const AdminPanel: React.FC = () => {
   const [prodActivo, setProdActivo] = useState(true);
   const [prodImagenFile, setProdImagenFile] = useState<File | null>(null);
   const [prodImagenPreview, setProdImagenPreview] = useState<string | null>(null);
-  const [prodPiramide, setProdPiramide] = useState<
-    { nota_id: number; tipo_etapa: 'Salida' | 'Corazón' | 'Fondo' }[]
-  >([]);
   const [prodVariantes, setProdVariantes] = useState<
     {
       id?: number;
@@ -92,9 +116,16 @@ export const AdminPanel: React.FC = () => {
       disponible: boolean;
     }[]
   >([]);
-  const [selectedNotaId, setSelectedNotaId] = useState<number>(0);
-  const [selectedEtapa, setSelectedEtapa] = useState<'Salida' | 'Corazón' | 'Fondo'>('Salida');
-  const [quickNotaNombre, setQuickNotaNombre] = useState('');
+
+  // Modal de Confirmación de Eliminación de Perfume
+  const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<{
+    id: number;
+    nombre: string;
+    marcaNombre?: string;
+    concentracion?: string;
+    imagenUrl?: string;
+  } | null>(null);
+  const [deletingProductLoading, setDeletingProductLoading] = useState<boolean>(false);
 
   // Modal de Promoción (Crear / Editar)
   const [promoModalOpen, setPromoModalOpen] = useState(false);
@@ -107,11 +138,10 @@ export const AdminPanel: React.FC = () => {
   const [promoActivo, setPromoActivo] = useState(true);
   const [promoVarianteIds, setPromoVarianteIds] = useState<number[]>([]);
 
-  // Formularios rápidos para Familias, Notas y Marcas
+  // Formularios rápidos para Familias y Marcas
   const [famEditId, setFamEditId] = useState<number | null>(null);
   const [famNombre, setFamNombre] = useState('');
   const [famDesc, setFamDesc] = useState('');
-  const [nuevaNota, setNuevaNota] = useState('');
 
   const [marcaEditId, setMarcaEditId] = useState<number | null>(null);
   const [marcaNombre, setMarcaNombre] = useState('');
@@ -134,12 +164,20 @@ export const AdminPanel: React.FC = () => {
       };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Authorization'] = `Bearer ${token}`;
+        headers['X-Admin-Token'] = token;
       }
       if (!(options.body instanceof FormData) && !headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
       }
 
-      const res = await fetch(url, { ...options, headers });
+      let requestUrl = url;
+      if (token && url.startsWith('/api/admin') && url !== '/api/admin/auth/login') {
+        const sep = url.includes('?') ? '&' : '?';
+        requestUrl = `${url}${sep}token=${encodeURIComponent(token)}`;
+      }
+
+      const res = await fetch(requestUrl, { ...options, headers });
       const json = await res.json();
       if (res.status === 401 && url !== '/api/admin/auth/login') {
         sessionStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -154,24 +192,78 @@ export const AdminPanel: React.FC = () => {
     [token]
   );
 
+  // Debounce del buscador de perfumes en Admin
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setProdSearchQuery(prodSearchInput.trim());
+      setProdPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [prodSearchInput]);
+
+  const loadAdminProductos = useCallback(async () => {
+    if (!token) return;
+    setProdLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set('page', String(prodPage));
+      params.set('per_page', String(prodPerPage));
+      if (prodSearchQuery) params.set('q', prodSearchQuery);
+      if (prodFilterMarca) params.set('marca', prodFilterMarca);
+      if (prodFilterGenero) params.set('genero', prodFilterGenero);
+      if (prodFilterEstado !== '') params.set('activo', prodFilterEstado);
+      if (prodFilterCarrusel !== '') params.set('destacado', prodFilterCarrusel);
+
+      const prodRes = await apiFetch(`/api/admin/productos?${params.toString()}`);
+      const items = prodRes.data?.items ?? [];
+      const pag = prodRes.data?.pagination;
+
+      setProductos(items);
+      if (pag) {
+        setProdPagination({
+          total: Number(pag.total ?? items.length),
+          total_global: Number(pag.total_global ?? pag.total ?? items.length),
+          total_destacados: Number(
+            pag.total_destacados ?? items.filter((p: any) => p.destacado).length
+          ),
+          page: Number(pag.page ?? prodPage),
+          per_page: Number(pag.per_page ?? prodPerPage),
+          total_pages: Math.max(1, Number(pag.total_pages ?? 1)),
+        });
+        if (pag.page && Number(pag.page) !== prodPage) {
+          setProdPage(Number(pag.page));
+        }
+      }
+    } catch (err: any) {
+      showMessage('error', err.message);
+    } finally {
+      setProdLoading(false);
+    }
+  }, [
+    token,
+    apiFetch,
+    prodPage,
+    prodPerPage,
+    prodSearchQuery,
+    prodFilterMarca,
+    prodFilterGenero,
+    prodFilterEstado,
+    prodFilterCarrusel,
+  ]);
+
   const loadAllAdminData = useCallback(async () => {
     if (!token) return;
     try {
-      const [prodRes, marRes, famRes, notRes, varRes, proRes, conRes] =
-        await Promise.all([
-          apiFetch('/api/admin/productos?per_page=50'),
-          apiFetch('/api/admin/marcas'),
-          apiFetch('/api/admin/familias-olfativas'),
-          apiFetch('/api/admin/notas-olfativas'),
-          apiFetch('/api/admin/variantes'),
-          apiFetch('/api/admin/promociones'),
-          apiFetch('/api/admin/configuracion-contacto'),
-        ]);
+      const [marRes, famRes, varRes, proRes, conRes] = await Promise.all([
+        apiFetch('/api/admin/marcas'),
+        apiFetch('/api/admin/familias-olfativas'),
+        apiFetch('/api/admin/variantes'),
+        apiFetch('/api/admin/promociones'),
+        apiFetch('/api/admin/configuracion-contacto'),
+      ]);
 
-      setProductos(prodRes.data?.items ?? []);
       setMarcas(marRes.data ?? []);
       setFamilias(famRes.data ?? []);
-      setNotas(notRes.data ?? []);
       setTodasVariantes(varRes.data ?? []);
       setPromociones(proRes.data ?? []);
       if (conRes.data) {
@@ -201,6 +293,12 @@ export const AdminPanel: React.FC = () => {
       })
       .finally(() => setAuthChecking(false));
   }, [token, apiFetch, loadAllAdminData]);
+
+  useEffect(() => {
+    if (token && adminUser) {
+      loadAdminProductos();
+    }
+  }, [token, adminUser, loadAdminProductos]);
 
   // ===========================================================================
   // AUTENTICACIÓN
@@ -250,7 +348,6 @@ export const AdminPanel: React.FC = () => {
     setProdActivo(true);
     setProdImagenFile(null);
     setProdImagenPreview(null);
-    setProdPiramide([]);
     setProdVariantes([
       {
         tamano_ml: 100,
@@ -260,7 +357,6 @@ export const AdminPanel: React.FC = () => {
         disponible: true,
       },
     ]);
-    if (notas.length > 0) setSelectedNotaId(notas[0].id);
     setProductModalOpen(true);
   };
 
@@ -281,19 +377,6 @@ export const AdminPanel: React.FC = () => {
       setProdImagenFile(null);
       setProdImagenPreview(p.imagen?.url ?? null);
 
-      const flatPiramide: {
-        nota_id: number;
-        tipo_etapa: 'Salida' | 'Corazón' | 'Fondo';
-      }[] = [];
-      if (p.piramide_olfativa) {
-        (['Salida', 'Corazón', 'Fondo'] as const).forEach((etapa) => {
-          (p.piramide_olfativa[etapa] ?? []).forEach((n: any) => {
-            flatPiramide.push({ nota_id: n.id, tipo_etapa: etapa });
-          });
-        });
-      }
-      setProdPiramide(flatPiramide);
-
       setProdVariantes(
         (p.variantes ?? []).map((v: any) => ({
           id: v.id,
@@ -304,7 +387,6 @@ export const AdminPanel: React.FC = () => {
           disponible: Boolean(v.disponible),
         }))
       );
-      if (notas.length > 0) setSelectedNotaId(notas[0].id);
       setProductModalOpen(true);
     } catch (err: any) {
       showMessage('error', err.message);
@@ -326,7 +408,7 @@ export const AdminPanel: React.FC = () => {
       formData.append('descripcion', prodDescripcion);
       formData.append('destacado', prodDestacado ? '1' : '0');
       formData.append('activo', prodActivo ? '1' : '0');
-      formData.append('piramide', JSON.stringify(prodPiramide));
+      formData.append('piramide', JSON.stringify([]));
       formData.append('variantes', JSON.stringify(prodVariantes));
 
       if (prodImagenFile) {
@@ -349,20 +431,38 @@ export const AdminPanel: React.FC = () => {
       }
 
       setProductModalOpen(false);
+      loadAdminProductos();
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
     }
   };
 
-  const handleDeleteProduct = async (id: number, nombre: string) => {
-    if (!window.confirm(`¿Eliminar definitivamente el perfume "${nombre}"?`)) return;
+  const requestDeleteProduct = (prod: any) => {
+    setDeleteConfirmProduct({
+      id: prod.id,
+      nombre: prod.nombre,
+      marcaNombre: prod.marca?.nombre,
+      concentracion: prod.concentracion,
+      imagenUrl: prod.imagen?.url,
+    });
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!deleteConfirmProduct) return;
+    setDeletingProductLoading(true);
     try {
-      await apiFetch(`/api/admin/productos/${id}`, { method: 'DELETE' });
-      showMessage('ok', 'Perfume eliminado.');
+      await apiFetch(`/api/admin/productos/${deleteConfirmProduct.id}`, {
+        method: 'DELETE',
+      });
+      showMessage('ok', `Perfume "${deleteConfirmProduct.nombre}" eliminado correctamente.`);
+      setDeleteConfirmProduct(null);
+      loadAdminProductos();
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
+    } finally {
+      setDeletingProductLoading(false);
     }
   };
 
@@ -379,26 +479,7 @@ export const AdminPanel: React.FC = () => {
           ? `"${prod.nombre}" agregado al Carrusel de Inicio.`
           : `"${prod.nombre}" retirado del Carrusel de Inicio.`
       );
-      loadAllAdminData();
-    } catch (err: any) {
-      showMessage('error', err.message);
-    }
-  };
-
-  const handleQuickCreateNotaInModal = async () => {
-    if (!quickNotaNombre.trim()) return;
-    try {
-      const res = await apiFetch('/api/admin/notas-olfativas', {
-        method: 'POST',
-        body: JSON.stringify({ nombre: quickNotaNombre.trim() }),
-      });
-      const created = res.data;
-      setNotas((prev) => [...prev, created]);
-      setProdPiramide((prev) => [
-        ...prev,
-        { nota_id: created.id, tipo_etapa: selectedEtapa },
-      ]);
-      setQuickNotaNombre('');
+      loadAdminProductos();
     } catch (err: any) {
       showMessage('error', err.message);
     }
@@ -459,6 +540,7 @@ export const AdminPanel: React.FC = () => {
         showMessage('ok', 'Promoción creada correctamente.');
       }
       setPromoModalOpen(false);
+      loadAdminProductos();
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
@@ -475,6 +557,7 @@ export const AdminPanel: React.FC = () => {
         'ok',
         `Promoción "${promo.nombre}" ${!promo.activo ? 'activada' : 'desactivada'}.`
       );
+      loadAdminProductos();
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
@@ -486,6 +569,7 @@ export const AdminPanel: React.FC = () => {
     try {
       await apiFetch(`/api/admin/promociones/${id}`, { method: 'DELETE' });
       showMessage('ok', 'Promoción eliminada.');
+      loadAdminProductos();
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
@@ -515,22 +599,6 @@ export const AdminPanel: React.FC = () => {
       setFamEditId(null);
       setFamNombre('');
       setFamDesc('');
-      loadAllAdminData();
-    } catch (err: any) {
-      showMessage('error', err.message);
-    }
-  };
-
-  const handleCreateNota = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nuevaNota.trim()) return;
-    try {
-      await apiFetch('/api/admin/notas-olfativas', {
-        method: 'POST',
-        body: JSON.stringify({ nombre: nuevaNota.trim() }),
-      });
-      setNuevaNota('');
-      showMessage('ok', 'Nota olfativa agregada.');
       loadAllAdminData();
     } catch (err: any) {
       showMessage('error', err.message);
@@ -756,7 +824,7 @@ export const AdminPanel: React.FC = () => {
           {[
             { id: 'productos', label: '1. Perfumes & Precios', icon: Sparkles },
             { id: 'promociones', label: '2. Promociones (Sale)', icon: Tag },
-            { id: 'familias', label: '3. Familias & Notas Olfativas', icon: Layers },
+            { id: 'familias', label: '3. Familias Olfativas', icon: Layers },
             { id: 'marcas', label: '4. Marcas', icon: ShieldCheck },
             { id: 'configuracion', label: '5. WhatsApp & Seguridad', icon: Lock },
           ].map((tab) => {
@@ -809,20 +877,36 @@ export const AdminPanel: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="font-serif text-3xl font-semibold">
-                  Catálogo de Perfumes ({productos.length})
+                  Catálogo de Perfumes ({prodPagination.total_global || prodPagination.total})
                 </h2>
                 <p className="text-xs text-drea-ink-muted">
                   Las imágenes subidas (JPG/PNG) se comprimen automáticamente a WebP. Activa con un clic los perfumes que deseas deslizar en el <strong>Carrusel de Inicio (Home)</strong>.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3 py-2 bg-white border border-drea-gold/50 text-xs font-semibold text-drea-ink">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProdFilterCarrusel((prev) => (prev === '1' ? '' : '1'));
+                    setProdPage(1);
+                  }}
+                  title="Haz clic para filtrar solo los perfumes del Carrusel de Inicio"
+                  className={`px-3 py-2 border text-xs font-semibold transition-colors ${
+                    prodFilterCarrusel === '1'
+                      ? 'bg-drea-burgundy text-white border-drea-burgundy'
+                      : 'bg-white border-drea-gold/50 text-drea-ink hover:border-drea-burgundy'
+                  }`}
+                >
                   Carrusel de Inicio:{' '}
-                  <strong className="text-drea-burgundy">
-                    {productos.filter((p) => p.destacado).length}
+                  <strong
+                    className={
+                      prodFilterCarrusel === '1' ? 'text-drea-gold-light' : 'text-drea-burgundy'
+                    }
+                  >
+                    {prodPagination.total_destacados}
                   </strong>{' '}
                   seleccionados (Recomendado: hasta 10)
-                </span>
+                </button>
                 <button
                   type="button"
                   onClick={openNewProductModal}
@@ -834,7 +918,143 @@ export const AdminPanel: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-drea-canvas-border overflow-x-auto">
+            {/* Barra de Buscador y Filtros Rápidos */}
+            <div className="bg-white border border-drea-canvas-border p-4 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                {/* Buscador por texto */}
+                <div className="md:col-span-5 relative">
+                  <Search className="w-4 h-4 text-drea-ink-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={prodSearchInput}
+                    onChange={(e) => setProdSearchInput(e.target.value)}
+                    placeholder="Buscar por perfume, marca, nota olfativa..."
+                    className="w-full border border-drea-canvas-border pl-9 pr-8 py-2 text-xs focus:outline-none focus:border-drea-burgundy"
+                  />
+                  {prodSearchInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProdSearchInput('');
+                        setProdSearchQuery('');
+                        setProdPage(1);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-drea-ink-muted hover:text-drea-ink"
+                      title="Limpiar búsqueda"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtro por Marca */}
+                <div className="md:col-span-2">
+                  <select
+                    value={prodFilterMarca}
+                    onChange={(e) => {
+                      setProdFilterMarca(e.target.value);
+                      setProdPage(1);
+                    }}
+                    className="w-full border border-drea-canvas-border px-2.5 py-2 text-xs bg-white focus:outline-none focus:border-drea-burgundy"
+                  >
+                    <option value="">Todas las marcas</option>
+                    {marcas.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Filtro por Género */}
+                <div className="md:col-span-2">
+                  <select
+                    value={prodFilterGenero}
+                    onChange={(e) => {
+                      setProdFilterGenero(e.target.value);
+                      setProdPage(1);
+                    }}
+                    className="w-full border border-drea-canvas-border px-2.5 py-2 text-xs bg-white focus:outline-none focus:border-drea-burgundy"
+                  >
+                    <option value="">Todos los géneros</option>
+                    <option value="Mujer">Mujer</option>
+                    <option value="Hombre">Hombre</option>
+                    <option value="Unisex">Unisex</option>
+                  </select>
+                </div>
+
+                {/* Filtro por Estado */}
+                <div className="md:col-span-2">
+                  <select
+                    value={prodFilterEstado}
+                    onChange={(e) => {
+                      setProdFilterEstado(e.target.value);
+                      setProdPage(1);
+                    }}
+                    className="w-full border border-drea-canvas-border px-2.5 py-2 text-xs bg-white focus:outline-none focus:border-drea-burgundy"
+                  >
+                    <option value="">Todos los estados</option>
+                    <option value="1">Solo Activos</option>
+                    <option value="0">Solo Ocultos</option>
+                  </select>
+                </div>
+
+                {/* Cantidad por página */}
+                <div className="md:col-span-1">
+                  <select
+                    value={prodPerPage}
+                    onChange={(e) => {
+                      setProdPerPage(Number(e.target.value));
+                      setProdPage(1);
+                    }}
+                    title="Perfumes por página"
+                    className="w-full border border-drea-canvas-border px-2 py-2 text-xs bg-white focus:outline-none focus:border-drea-burgundy"
+                  >
+                    <option value={10}>10 / pág</option>
+                    <option value={20}>20 / pág</option>
+                    <option value={50}>50 / pág</option>
+                  </select>
+                </div>
+              </div>
+
+              {(prodSearchQuery ||
+                prodFilterMarca ||
+                prodFilterGenero ||
+                prodFilterEstado !== '' ||
+                prodFilterCarrusel !== '') && (
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-drea-canvas-border text-xs">
+                  <span className="text-drea-ink-muted">
+                    Resultados encontrados:{' '}
+                    <strong className="text-drea-ink">{prodPagination.total}</strong> perfumes
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProdSearchInput('');
+                      setProdSearchQuery('');
+                      setProdFilterMarca('');
+                      setProdFilterGenero('');
+                      setProdFilterEstado('');
+                      setProdFilterCarrusel('');
+                      setProdPage(1);
+                    }}
+                    className="text-drea-burgundy hover:underline font-semibold inline-flex items-center gap-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Limpiar todos los filtros</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white border border-drea-canvas-border overflow-x-auto relative">
+              {prodLoading && (
+                <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
+                  <span className="px-4 py-2 bg-drea-ink text-white text-xs uppercase tracking-wider shadow">
+                    Cargando perfumes...
+                  </span>
+                </div>
+              )}
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-drea-canvas-secondary border-b border-drea-canvas-border uppercase tracking-wider text-drea-ink-muted">
@@ -848,93 +1068,182 @@ export const AdminPanel: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-drea-canvas-border">
-                  {productos.map((p) => (
-                    <tr key={p.id} className="hover:bg-drea-canvas/50">
-                      <td className="py-3 px-4">
-                        <img
-                          src={p.imagen?.url}
-                          alt={p.nombre}
-                          className="w-14 h-14 object-contain bg-drea-canvas border border-drea-canvas-border p-1"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="font-serif text-lg font-semibold text-drea-ink">
-                          {p.nombre}
-                        </p>
-                        <p className="text-drea-ink-muted">
-                          {p.marca?.nombre} · {p.concentracion}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="font-medium">{p.genero}</p>
-                        <p className="text-drea-ink-muted">
-                          {p.familia_olfativa?.nombre ?? 'Sin familia'}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4 space-y-1">
-                        {(p.variantes ?? []).map((v: any) => (
-                          <div key={v.id} className="flex items-center gap-2">
-                            <span className="font-medium">{v.etiqueta}:</span>
-                            <span className="text-drea-burgundy font-bold">
-                              {v.precio_final_cop}
-                            </span>
-                            {v.tiene_promocion && (
-                              <span className="px-1.5 py-0.5 text-[10px] bg-drea-burgundy text-drea-gold-light">
-                                {v.promocion?.etiqueta}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </td>
-                      <td className="py-3 px-4">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleProductCarousel(p)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] uppercase tracking-wider font-semibold border transition-colors ${
-                            p.destacado
-                              ? 'bg-drea-burgundy text-white border-drea-burgundy hover:bg-drea-burgundy-deep'
-                              : 'bg-white text-drea-ink-muted border-drea-canvas-border hover:border-drea-burgundy hover:text-drea-ink'
-                          }`}
-                          title="Activar o quitar este perfume del Carrusel de Inicio"
-                        >
-                          <Sparkles className="w-3 h-3" />
-                          <span>{p.destacado ? 'En Carrusel' : '+ Carrusel'}</span>
-                        </button>
-                      </td>
-                      <td className="py-3 px-4 space-y-1">
-                        <span
-                          className={`inline-block px-2 py-0.5 text-[10px] uppercase font-semibold ${
-                            p.activo
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          {p.activo ? 'Activo' : 'Oculto'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => openEditProductModal(p.id)}
-                          className="p-2 border border-drea-canvas-border hover:border-drea-burgundy text-drea-ink hover:text-drea-burgundy"
-                          title="Editar perfume"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteProduct(p.id, p.nombre)}
-                          className="p-2 border border-drea-canvas-border hover:border-red-700 text-drea-ink-muted hover:text-red-700"
-                          title="Eliminar perfume"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  {productos.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 px-4 text-center text-drea-ink-muted">
+                        No se encontraron perfumes con los criterios de búsqueda seleccionados.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    productos.map((p) => (
+                      <tr key={p.id} className="hover:bg-drea-canvas/50">
+                        <td className="py-3 px-4">
+                          <img
+                            src={p.imagen?.url}
+                            alt={p.nombre}
+                            loading="lazy"
+                            className="w-14 h-14 object-contain bg-drea-canvas border border-drea-canvas-border p-1"
+                          />
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="font-serif text-lg font-semibold text-drea-ink">
+                            {p.nombre}
+                          </p>
+                          <p className="text-drea-ink-muted">
+                            {p.marca?.nombre} · {p.concentracion}
+                          </p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="font-medium">{p.genero}</p>
+                          <p className="text-drea-ink-muted">
+                            {p.familia_olfativa?.nombre ?? 'Sin familia'}
+                          </p>
+                        </td>
+                        <td className="py-3 px-4 space-y-1">
+                          {(p.variantes ?? []).map((v: any) => (
+                            <div key={v.id} className="flex items-center gap-2">
+                              <span className="font-medium">{v.etiqueta}:</span>
+                              <span className="text-drea-burgundy font-bold">
+                                {v.precio_final_cop}
+                              </span>
+                              {v.tiene_promocion && (
+                                <span className="px-1.5 py-0.5 text-[10px] bg-drea-burgundy text-drea-gold-light">
+                                  {v.promocion?.etiqueta}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </td>
+                        <td className="py-3 px-4">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleProductCarousel(p)}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] uppercase tracking-wider font-semibold border transition-colors ${
+                              p.destacado
+                                ? 'bg-drea-burgundy text-white border-drea-burgundy hover:bg-drea-burgundy-deep'
+                                : 'bg-white text-drea-ink-muted border-drea-canvas-border hover:border-drea-burgundy hover:text-drea-ink'
+                            }`}
+                            title="Activar o quitar este perfume del Carrusel de Inicio"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>{p.destacado ? 'En Carrusel' : '+ Carrusel'}</span>
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 space-y-1">
+                          <span
+                            className={`inline-block px-2 py-0.5 text-[10px] uppercase font-semibold ${
+                              p.activo
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {p.activo ? 'Activo' : 'Oculto'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditProductModal(p.id)}
+                            className="p-2 border border-drea-canvas-border hover:border-drea-burgundy text-drea-ink hover:text-drea-burgundy"
+                            title="Editar perfume"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => requestDeleteProduct(p)}
+                            className="p-2 border border-drea-canvas-border hover:border-red-700 text-drea-ink-muted hover:text-red-700"
+                            title="Eliminar perfume"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* Controles de Paginación */}
+            {prodPagination.total > 0 && (
+              <div className="bg-white border border-drea-canvas-border px-4 py-3 flex flex-wrap items-center justify-between gap-4 text-xs">
+                <span className="text-drea-ink-muted">
+                  Mostrando{' '}
+                  <strong className="text-drea-ink">
+                    {(prodPagination.page - 1) * prodPagination.per_page + 1}
+                  </strong>{' '}
+                  –{' '}
+                  <strong className="text-drea-ink">
+                    {Math.min(
+                      prodPagination.page * prodPagination.per_page,
+                      prodPagination.total
+                    )}
+                  </strong>{' '}
+                  de <strong className="text-drea-ink">{prodPagination.total}</strong> perfumes
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={prodPage <= 1 || prodLoading}
+                    onClick={() => setProdPage((p) => Math.max(1, p - 1))}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-drea-canvas-border bg-white hover:border-drea-burgundy disabled:opacity-40 disabled:pointer-events-none font-semibold"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Anterior</span>
+                  </button>
+
+                  {Array.from({ length: prodPagination.total_pages }, (_, i) => i + 1)
+                    .filter(
+                      (pageNum) =>
+                        pageNum === 1 ||
+                        pageNum === prodPagination.total_pages ||
+                        Math.abs(pageNum - prodPage) <= 2
+                    )
+                    .reduce<number[]>((acc, pageNum) => {
+                      if (acc.length > 0 && pageNum - acc[acc.length - 1] > 1) {
+                        acc.push(-1);
+                      }
+                      acc.push(pageNum);
+                      return acc;
+                    }, [])
+                    .map((pageNum, idx) =>
+                      pageNum === -1 ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-drea-ink-muted">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          disabled={prodLoading}
+                          onClick={() => setProdPage(pageNum)}
+                          className={`min-w-[32px] py-1.5 px-2.5 border font-semibold transition-colors ${
+                            pageNum === prodPage
+                              ? 'bg-drea-burgundy text-white border-drea-burgundy'
+                              : 'bg-white text-drea-ink border-drea-canvas-border hover:border-drea-burgundy'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    )}
+
+                  <button
+                    type="button"
+                    disabled={prodPage >= prodPagination.total_pages || prodLoading}
+                    onClick={() =>
+                      setProdPage((p) => Math.min(prodPagination.total_pages, p + 1))
+                    }
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-drea-canvas-border bg-white hover:border-drea-burgundy disabled:opacity-40 disabled:pointer-events-none font-semibold"
+                  >
+                    <span>Siguiente</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1050,11 +1359,11 @@ export const AdminPanel: React.FC = () => {
         )}
 
         {/* =====================================================================
-            PESTAÑA 3: FAMILIAS OLFATIVAS Y NOTAS OLFATIVAS
+            PESTAÑA 3: FAMILIAS OLFATIVAS
            ===================================================================== */}
         {activeTab === 'familias' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Columna Familias Olfativas */}
+          <div className="max-w-3xl">
+            {/* Familias Olfativas */}
             <div className="bg-white border border-drea-canvas-border p-6 space-y-6">
               <div>
                 <h3 className="font-serif text-2xl font-semibold">
@@ -1138,59 +1447,6 @@ export const AdminPanel: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Columna Notas Olfativas */}
-            <div className="bg-white border border-drea-canvas-border p-6 space-y-6">
-              <div>
-                <h3 className="font-serif text-2xl font-semibold">
-                  Notas Olfativas ({notas.length})
-                </h3>
-                <p className="text-xs text-drea-ink-muted">
-                  Ingredientes individuales para armar la Pirámide Olfativa (Salida, Corazón y Fondo).
-                </p>
-              </div>
-
-              <form onSubmit={handleCreateNota} className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={nuevaNota}
-                  onChange={(e) => setNuevaNota(e.target.value)}
-                  placeholder="Nueva nota (ej. Cardamomo, Oud, Mandarina)..."
-                  className="flex-1 border border-drea-canvas-border px-3 py-2 text-xs"
-                />
-                <button type="submit" className="drea-btn-primary py-2 px-4">
-                  + Agregar Nota
-                </button>
-              </form>
-
-              <div className="flex flex-wrap gap-2 max-h-96 overflow-y-auto p-1">
-                {notas.map((n) => (
-                  <span
-                    key={n.id}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-drea-canvas border border-drea-canvas-border text-xs"
-                  >
-                    <span>{n.nombre}</span>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await apiFetch(`/api/admin/notas-olfativas/${n.id}`, {
-                            method: 'DELETE',
-                          });
-                          loadAllAdminData();
-                        } catch (err: any) {
-                          showMessage('error', err.message);
-                        }
-                      }}
-                      className="text-drea-ink-muted hover:text-red-700"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
                 ))}
               </div>
             </div>
@@ -1714,120 +1970,6 @@ export const AdminPanel: React.FC = () => {
                 </div>
               </div>
 
-              {/* Constructor de Pirámide Olfativa */}
-              <div className="bg-drea-canvas p-4 border border-drea-canvas-border space-y-3">
-                <span className="uppercase tracking-wider font-semibold text-drea-burgundy block">
-                  Pirámide Olfativa (Notas de Salida, Corazón y Fondo)
-                </span>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <select
-                    value={selectedEtapa}
-                    onChange={(e) => setSelectedEtapa(e.target.value as any)}
-                    className="border border-drea-canvas-border px-2.5 py-1.5 bg-white font-semibold"
-                  >
-                    <option value="Salida">Etapa: Salida</option>
-                    <option value="Corazón">Etapa: Corazón</option>
-                    <option value="Fondo">Etapa: Fondo</option>
-                  </select>
-
-                  <select
-                    value={selectedNotaId}
-                    onChange={(e) => setSelectedNotaId(Number(e.target.value))}
-                    className="border border-drea-canvas-border px-2.5 py-1.5 bg-white"
-                  >
-                    {notas.map((n) => (
-                      <option key={n.id} value={n.id}>
-                        {n.nombre}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!selectedNotaId) return;
-                      const exists = prodPiramide.some(
-                        (i) =>
-                          i.nota_id === selectedNotaId &&
-                          i.tipo_etapa === selectedEtapa
-                      );
-                      if (!exists) {
-                        setProdPiramide((prev) => [
-                          ...prev,
-                          { nota_id: selectedNotaId, tipo_etapa: selectedEtapa },
-                        ]);
-                      }
-                    }}
-                    className="px-3 py-1.5 bg-drea-ink text-white font-semibold"
-                  >
-                    + Asignar Nota
-                  </button>
-
-                  <div className="flex items-center gap-1 ml-auto">
-                    <input
-                      type="text"
-                      value={quickNotaNombre}
-                      onChange={(e) => setQuickNotaNombre(e.target.value)}
-                      placeholder="¿Nota nueva? Escríbela aquí"
-                      className="border border-drea-canvas-border px-2.5 py-1.5 bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleQuickCreateNotaInModal}
-                      className="px-2.5 py-1.5 bg-drea-burgundy text-white"
-                    >
-                      Crear y Asignar
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  {(['Salida', 'Corazón', 'Fondo'] as const).map((etapa) => (
-                    <div
-                      key={etapa}
-                      className="bg-white p-3 border border-drea-canvas-border"
-                    >
-                      <p className="font-semibold uppercase text-[10px] tracking-wider text-drea-burgundy mb-2">
-                        Notas de {etapa}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {prodPiramide
-                          .filter((i) => i.tipo_etapa === etapa)
-                          .map((i) => {
-                            const notaObj = notas.find((n) => n.id === i.nota_id);
-                            return (
-                              <span
-                                key={`${etapa}-${i.nota_id}`}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-drea-canvas border border-drea-canvas-border"
-                              >
-                                <span>{notaObj?.nombre ?? `#${i.nota_id}`}</span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setProdPiramide((prev) =>
-                                      prev.filter(
-                                        (x) =>
-                                          !(
-                                            x.nota_id === i.nota_id &&
-                                            x.tipo_etapa === etapa
-                                          )
-                                      )
-                                    )
-                                  }
-                                  className="text-red-700"
-                                >
-                                  ×
-                                </button>
-                              </span>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="flex justify-end gap-3 pt-4 border-t border-drea-canvas-border">
                 <button
                   type="button"
@@ -1997,6 +2139,84 @@ export const AdminPanel: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* =======================================================================
+          MODAL DE CONFIRMACIÓN PARA ELIMINAR PERFUME (ANTI-MISCLICK)
+         ======================================================================= */}
+      {deleteConfirmProduct && (
+        <div
+          className="fixed inset-0 z-50 bg-black/65 flex items-center justify-center p-4"
+          onClick={() => !deletingProductLoading && setDeleteConfirmProduct(null)}
+        >
+          <div
+            className="bg-white border border-drea-canvas-border max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 bg-red-50 border border-red-200 text-red-700 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-editorial text-red-700 font-semibold">
+                  Confirmación de Seguridad
+                </span>
+                <h3 className="font-serif text-2xl font-semibold text-drea-ink mt-0.5">
+                  ¿Eliminar este perfume?
+                </h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3.5 bg-drea-canvas border border-drea-canvas-border">
+              {deleteConfirmProduct.imagenUrl && (
+                <img
+                  src={deleteConfirmProduct.imagenUrl}
+                  alt={deleteConfirmProduct.nombre}
+                  className="w-14 h-14 object-contain bg-white border border-drea-canvas-border p-1 shrink-0"
+                />
+              )}
+              <div className="min-w-0">
+                <p className="font-serif text-lg font-semibold text-drea-ink truncate">
+                  {deleteConfirmProduct.nombre}
+                </p>
+                <p className="text-xs text-drea-ink-muted truncate">
+                  {deleteConfirmProduct.marcaNombre ?? 'Marca'}{' '}
+                  {deleteConfirmProduct.concentracion
+                    ? `· ${deleteConfirmProduct.concentracion}`
+                    : ''}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-drea-ink-muted leading-relaxed">
+              Estás a punto de eliminar definitivamente{' '}
+              <strong className="text-drea-ink">“{deleteConfirmProduct.nombre}”</strong> junto con
+              todas sus presentaciones, precios e imagen WebP. Esta acción no se puede deshacer.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-drea-canvas-border text-xs">
+              <button
+                type="button"
+                disabled={deletingProductLoading}
+                onClick={() => setDeleteConfirmProduct(null)}
+                className="px-5 py-2.5 border border-drea-canvas-border bg-white text-drea-ink hover:border-drea-ink font-semibold uppercase tracking-wider transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deletingProductLoading}
+                onClick={confirmDeleteProduct}
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>
+                  {deletingProductLoading ? 'Eliminando...' : 'Sí, Eliminar Perfume'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}

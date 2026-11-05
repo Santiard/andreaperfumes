@@ -165,16 +165,31 @@ final class ProductoRepository
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
+        $globalStatsStmt = $this->db->query('
+            SELECT
+                COUNT(id) AS total_global,
+                COALESCE(SUM(CASE WHEN destacado = 1 THEN 1 ELSE 0 END), 0) AS total_destacados
+            FROM productos
+        ');
+        $globalStats = $globalStatsStmt ? $globalStatsStmt->fetch() : false;
+        $totalGlobal = is_array($globalStats) ? (int) ($globalStats['total_global'] ?? $total) : $total;
+        $totalDestacados = is_array($globalStats) ? (int) ($globalStats['total_destacados'] ?? 0) : 0;
+
         $page = max(1, (int) ($filters['page'] ?? 1));
         $perPage = min(150, max(1, (int) ($filters['per_page'] ?? 12)));
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
         $offset = ($page - 1) * $perPage;
 
         $orderSql = match ((string) ($filters['orden'] ?? 'destacados')) {
-            'precio_asc'  => '(SELECT MIN(vp.precio_base) FROM variantes_producto vp WHERE vp.producto_id = p.id AND vp.disponible = 1) ASC, p.id DESC',
-            'precio_desc' => '(SELECT MIN(vp.precio_base) FROM variantes_producto vp WHERE vp.producto_id = p.id AND vp.disponible = 1) DESC, p.id DESC',
+            'precio_asc'  => '(SELECT MIN(vp.precio_base) FROM variantes_producto vp WHERE vp.producto_id = p.id AND vp.disponible = 1) ASC, p.id ASC',
+            'precio_desc' => '(SELECT MIN(vp.precio_base) FROM variantes_producto vp WHERE vp.producto_id = p.id AND vp.disponible = 1) DESC, p.id ASC',
             'nombre_asc'  => 'p.nombre ASC',
             'recientes'   => 'p.created_at DESC, p.id DESC',
-            default       => 'p.destacado DESC, p.id DESC',
+            'antiguos'    => 'p.created_at ASC, p.id ASC',
+            default       => 'p.created_at ASC, p.id ASC',
         };
 
         // NUNCA seleccionar p.imagen_data en listados
@@ -219,10 +234,12 @@ final class ProductoRepository
             return [
                 'items'      => [],
                 'pagination' => [
-                    'total'       => $total,
-                    'page'        => $page,
-                    'per_page'    => $perPage,
-                    'total_pages' => (int) ceil($total / $perPage),
+                    'total'            => $total,
+                    'total_global'     => $totalGlobal,
+                    'total_destacados' => $totalDestacados,
+                    'page'             => $page,
+                    'per_page'         => $perPage,
+                    'total_pages'      => (int) ceil($total / $perPage),
                 ],
             ];
         }
@@ -239,10 +256,12 @@ final class ProductoRepository
         return [
             'items'      => $items,
             'pagination' => [
-                'total'       => $total,
-                'page'        => $page,
-                'per_page'    => $perPage,
-                'total_pages' => (int) ceil($total / $perPage),
+                'total'            => $total,
+                'total_global'     => $totalGlobal,
+                'total_destacados' => $totalDestacados,
+                'page'             => $page,
+                'per_page'         => $perPage,
+                'total_pages'      => (int) ceil($total / $perPage),
             ],
         ];
     }
