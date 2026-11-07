@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   ArrowRight,
+  Award,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -9,7 +10,9 @@ import {
   MapPin,
   MessageCircle,
   Phone,
+  ShieldCheck,
   Sparkles,
+  Truck,
 } from 'lucide-react';
 import { DREA_BRAND } from '../../config/brand.config';
 import {
@@ -17,6 +20,7 @@ import {
   Producto,
   VarianteProducto,
 } from '../../types/catalog';
+import { ProgressiveImage } from '../common/ProgressiveImage';
 
 interface HomeViewProps {
   featuredProductos: Producto[];
@@ -43,6 +47,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const [selectedVariantByProd, setSelectedVariantByProd] = useState<Record<number, number>>({});
+  const [loadedCategories, setLoadedCategories] = useState<Record<string, boolean>>({});
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
@@ -105,7 +110,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     {
       id: 'sets',
       title: 'SETS',
-      imageUrl: '/assets/categorias/kits2.webp',
+      imageUrl: '/assets/categorias/sets.webp',
       bgGradient:
         'linear-gradient(145deg, #24211E 0%, #4A3E2D 55%, #8C6D32 100%)',
       filterAction: {
@@ -119,7 +124,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   ];
 
   return (
-    <div className="w-full space-y-20 pb-8">
+    <div className="w-full space-y-20">
       {/* =====================================================================
           1. CARRUSEL DE PERFUMES SELECCIONADOS DESDE EL ADMINISTRADOR (Hasta 10+)
       ===================================================================== */}
@@ -143,7 +148,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               type="button"
               onClick={() => scrollCarousel('left')}
               aria-label="Deslizar a la izquierda"
-              className="w-10 h-10 bg-white border border-drea-canvas-border hover:border-drea-burgundy text-drea-ink hover:text-drea-burgundy flex items-center justify-center transition-colors shadow-xs"
+              className="w-10 h-10 bg-white border border-drea-canvas-border hover:border-drea-burgundy hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-all duration-300 shadow-xs hover:shadow-md hover:scale-105 active:scale-95"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -151,7 +156,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               type="button"
               onClick={() => scrollCarousel('right')}
               aria-label="Deslizar a la derecha"
-              className="w-10 h-10 bg-white border border-drea-canvas-border hover:border-drea-burgundy text-drea-ink hover:text-drea-burgundy flex items-center justify-center transition-colors shadow-xs"
+              className="w-10 h-10 bg-white border border-drea-canvas-border hover:border-drea-burgundy hover:bg-drea-burgundy text-drea-ink hover:text-white flex items-center justify-center transition-all duration-300 shadow-xs hover:shadow-md hover:scale-105 active:scale-95"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -244,10 +249,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         </div>
                       </div>
 
-                      <img
+                      <ProgressiveImage
                         src={prod.imagen.url}
                         alt={prod.nombre}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className="group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
 
@@ -391,13 +396,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {/* Contenedor interior delimitado por la línea dorada: de la línea hacia afuera queda el degradado; de la línea hacia adentro va la imagen */}
               <div className="relative w-full h-full border border-drea-gold/35 group-hover:border-drea-gold transition-colors overflow-hidden flex flex-col justify-end p-5">
                 {/* Imagen responsiva dentro del marco interior (Sin degradado encima para ver la foto natural) */}
+                {/* Skeleton Shimmer mientras descarga la foto de la categoría */}
+                {!loadedCategories[cat.id] && (
+                  <div className="absolute inset-0 z-0 flex items-center justify-center bg-black/40">
+                    <div className="w-full h-full animate-pulse bg-gradient-to-t from-[#2B1921] to-[#141414]" />
+                    <div className="absolute w-6 h-6 rounded-full border-2 border-drea-gold/30 border-t-drea-gold animate-spin" />
+                  </div>
+                )}
+
                 <img
                   src={cat.imageUrl}
                   alt={cat.title}
+                  loading="lazy"
+                  onLoad={() => setLoadedCategories((prev) => ({ ...prev, [cat.id]: true }))}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.opacity = '0';
                   }}
-                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  className={`absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-700 ease-out ${
+                    loadedCategories[cat.id] ? 'opacity-100' : 'opacity-0'
+                  }`}
                 />
 
                 {/* Título limpio sobre la imagen (CABALLERO · DAMA · KITS · NICHO) */}
@@ -418,99 +435,177 @@ export const HomeView: React.FC<HomeViewProps> = ({
       ===================================================================== */}
       <section className="bg-drea-ink text-white border-t border-white/15">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-20 space-y-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Identidad DREA PERFUMES & Lema Oficial */}
-            <div className="lg:col-span-5 space-y-5 text-center lg:text-left">
-              <div className="inline-flex items-center gap-3.5">
-                <div className="w-14 h-14 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-white/20">
-                  <img
-                    src={DREA_BRAND.assets.logo}
-                    alt={DREA_BRAND.name}
-                    className="w-full h-full object-cover"
-                  />
+          {/* Estructura dividida en 2 Columnas Principales: 1) Datos / Redes  2) Reel Vertical */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
+            
+            {/* COLUMNA 1: Datos de la Marca + WhatsApp + Instagram (7 columnas) */}
+            <div className="lg:col-span-7 xl:col-span-7 space-y-8 text-left">
+              {/* Identidad de Marca & Showroom */}
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-4">
+                  <div className="w-16 h-16 sm:w-[70px] sm:h-[70px] rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-drea-gold/40 shadow-lg shrink-0">
+                    <img
+                      src={DREA_BRAND.assets.logo}
+                      alt={DREA_BRAND.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs sm:text-sm uppercase tracking-[0.26em] text-drea-gold-light font-semibold block font-sans">
+                      {DREA_BRAND.contact.headline}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <span className="text-[10px] uppercase tracking-[0.28em] text-white/60 font-semibold block">
-                    {DREA_BRAND.contact.headline}
+
+                <div className="space-y-2.5 pt-1 text-sm text-white/85">
+                  <p className="flex items-center gap-2.5">
+                    <MapPin className="w-4 h-4 text-drea-gold-light shrink-0" />
+                    <span>{DREA_BRAND.contact.showroom}</span>
+                  </p>
+                  <p className="flex items-center gap-2.5">
+                    <Clock className="w-4 h-4 text-drea-gold-light shrink-0" />
+                    <span>{DREA_BRAND.contact.schedule}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Tarjetas de Contacto: WhatsApp e Instagram en 1 Columna estructurada */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-1">
+                {/* Tarjeta WhatsApp */}
+                <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-6 flex flex-col justify-between space-y-5 transition-colors">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
+                      <Phone className="w-3.5 h-3.5 text-white/70" />
+                      <span>WhatsApp Oficial</span>
+                    </div>
+                    <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wider tabular-nums text-white">
+                      {DREA_BRAND.contact.whatsappDisplay}
+                    </h3>
+                  </div>
+                  <a
+                    href={DREA_BRAND.contact.whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-drea-burgundy hover:bg-drea-burgundy-dark text-white border border-white/15 text-xs uppercase tracking-editorial font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-md"
+                  >
+                    <MessageCircle className="w-4 h-4 text-white" />
+                    <span>Escribir por WhatsApp</span>
+                  </a>
+                </div>
+
+                {/* Tarjeta Instagram */}
+                <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-6 flex flex-col justify-between space-y-5 transition-colors">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
+                      <Instagram className="w-3.5 h-3.5 text-white/70" />
+                      <span>Instagram Oficial</span>
+                    </div>
+                    <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wide text-white">
+                      {DREA_BRAND.contact.instagramHandle}
+                    </h3>
+                  </div>
+                  <a
+                    href={DREA_BRAND.contact.instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-drea-burgundy text-white border border-white/25 hover:border-drea-burgundy text-xs uppercase tracking-editorial font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-md"
+                  >
+                    <Instagram className="w-4 h-4 text-white" />
+                    <span>Seguir en Instagram</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Beneficios de Confianza: +5 Años, Envíos 72h, Pagos Seguros */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                {/* 5 Años de Experiencia */}
+                <div className="flex items-center gap-3 bg-white/[0.03] border border-white/15 hover:border-white/30 p-3.5 transition-colors">
+                  <Award className="w-5 h-5 text-drea-gold-light shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-xs font-semibold text-white tracking-wide">
+                      +5 Años
+                    </p>
+                    <p className="text-[11px] text-white/60">
+                      De experiencia
+                    </p>
+                  </div>
+                </div>
+
+                {/* Envíos Rápidos */}
+                <div className="flex items-center gap-3 bg-white/[0.03] border border-white/15 hover:border-white/30 p-3.5 transition-colors">
+                  <Truck className="w-5 h-5 text-drea-gold-light shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-xs font-semibold text-white tracking-wide">
+                      Envíos Rápidos
+                    </p>
+                    <p className="text-[11px] text-white/60">
+                      Máximo 72 horas
+                    </p>
+                  </div>
+                </div>
+
+                {/* Pagos Seguros */}
+                <div className="flex items-center gap-3 bg-white/[0.03] border border-white/15 hover:border-white/30 p-3.5 transition-colors">
+                  <ShieldCheck className="w-5 h-5 text-drea-gold-light shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-xs font-semibold text-white tracking-wide">
+                      Pagos Seguros
+                    </p>
+                    <p className="text-[11px] text-white/60">
+                      100% garantizados
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* COLUMNA 2: Reproductor de Reel en Formato Vertical (5 columnas) */}
+            <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end">
+              <a
+                href={DREA_BRAND.contact.instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Ver Reel en Instagram (@perfumeshopcucuta)"
+                aria-label="Reproducir Reel en Instagram"
+                className="group relative block w-full max-w-[270px] sm:max-w-[290px] aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-b from-[#2B1921] to-[#141414] border border-white/20 hover:border-drea-gold/60 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(122,12,53,0.4)]"
+              >
+                {/* Video del Reel en Loop Silenciado */}
+                <video
+                  src="/assets/videos/reel.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+
+                {/* Badge Superior Izquierdo: Instagram Handle */}
+                <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white text-[11px] font-medium shadow-md">
+                  <Instagram className="w-3.5 h-3.5 text-drea-gold-light" />
+                  <span>{DREA_BRAND.contact.instagramHandle}</span>
+                </div>
+
+                {/* Badge Superior Derecho: Indicador de Reproducción Activa */}
+                <div className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white shadow-md">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                </div>
+
+                {/* Overlay Inferior: Gradiente y Botón Flotante para ir a Instagram */}
+                <div className="absolute inset-x-0 bottom-0 z-20 p-5 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col items-center gap-2 text-center">
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-white/80 font-semibold drop-shadow-sm">
+                    Reel Oficial DREA
                   </span>
-                  <h2 className="font-serif text-3xl font-semibold text-white tracking-wider">
-                    {DREA_BRAND.name}
-                  </h2>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-drea-burgundy/90 group-hover:bg-drea-burgundy text-white text-[11px] font-bold tracking-wider uppercase rounded-full border border-white/30 transition-all duration-300 group-hover:scale-105 shadow-lg">
+                    <Instagram className="w-3.5 h-3.5" />
+                    <span>Ver en Instagram</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2.5 pt-1 text-sm text-white/85">
-                <p className="flex items-center justify-center lg:justify-start gap-2.5">
-                  <MapPin className="w-4 h-4 text-white/60 shrink-0" />
-                  <span>{DREA_BRAND.contact.showroom}</span>
-                </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2.5">
-                  <Clock className="w-4 h-4 text-white/60 shrink-0" />
-                  <span>{DREA_BRAND.contact.schedule}</span>
-                </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2.5">
-                  <Sparkles className="w-4 h-4 text-white/60 shrink-0" />
-                  <span>{DREA_BRAND.contact.advisory}</span>
-                </p>
-              </div>
+              </a>
             </div>
 
-            {/* Tarjetas de Contacto Directo & Redes Sociales (Bordes sobrios blanco/platino, sin tonos amarillos) */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Tarjeta WhatsApp */}
-              <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-7 flex flex-col justify-between space-y-6 transition-colors">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
-                    <Phone className="w-3.5 h-3.5 text-white/70" />
-                    <span>WhatsApp Oficial</span>
-                  </div>
-                  {/* Tipografía Sans-Serif geométrica (tabular-nums) para que los números queden 100% alineados */}
-                  <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wider tabular-nums text-white">
-                    {DREA_BRAND.contact.whatsappDisplay}
-                  </h3>
-                  <p className="text-xs text-white/65 leading-relaxed">
-                    {DREA_BRAND.contact.advisory} · {DREA_BRAND.contact.schedule}
-                  </p>
-                </div>
-                <a
-                  href={DREA_BRAND.contact.whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-drea-burgundy hover:bg-drea-burgundy-dark text-white border border-white/15 text-xs uppercase tracking-editorial font-semibold transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-white" />
-                  <span>Escribir por WhatsApp</span>
-                </a>
-              </div>
-
-              {/* Tarjeta Instagram */}
-              <div className="bg-white/[0.03] border border-white/15 hover:border-white/35 p-7 flex flex-col justify-between space-y-6 transition-colors">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-white/60 text-[11px] uppercase tracking-editorial font-semibold">
-                    <Instagram className="w-3.5 h-3.5 text-white/70" />
-                    <span>Instagram Oficial</span>
-                  </div>
-                  <h3 className="font-sans text-xl sm:text-2xl font-semibold tracking-wide text-white">
-                    {DREA_BRAND.contact.instagramHandle}
-                  </h3>
-                  <p className="text-xs text-white/65 leading-relaxed">
-                    {DREA_BRAND.contact.showroom} · {DREA_BRAND.contact.headline}
-                  </p>
-                </div>
-                <a
-                  href={DREA_BRAND.contact.instagramUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/25 text-xs uppercase tracking-editorial font-semibold transition-colors"
-                >
-                  <Instagram className="w-4 h-4 text-white" />
-                  <span>Seguir en Instagram</span>
-                </a>
-              </div>
-            </div>
           </div>
 
-          {/* Derechos Reservados */}
+          {/* Derechos Reservados & Enlaces */}
           <div className="pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-[11px] text-white/50">
             <span>
               © {new Date().getFullYear()} {DREA_BRAND.name} · Cúcuta. Todos los derechos
@@ -533,6 +628,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
               >
                 WhatsApp ({DREA_BRAND.contact.whatsappDisplay})
               </a>
+            </div>
+          </div>
+
+          {/* Franja Oficial de Autoría: INNOVA */}
+          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="italic leading-snug">
+              <span className="block text-white/90 text-sm sm:text-base font-normal tracking-wide">
+                Las ideas no tienen límites,
+              </span>
+              <span className="block text-[#B81B4F] text-sm sm:text-base font-bold tracking-wide">
+                nosotros les damos forma.
+              </span>
+            </div>
+
+            <div className="flex items-center text-xs sm:text-sm text-white/75 tracking-wide font-sans">
+              <span>
+                Diseñado y desarrollado por{' '}
+                <strong className="text-white font-extrabold tracking-wider">INNOVA</strong>
+              </span>
+              <span className="mx-3 text-white/30 font-light">|</span>
+              <span className="tabular-nums">© {new Date().getFullYear()}</span>
             </div>
           </div>
         </div>

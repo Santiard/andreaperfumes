@@ -84,12 +84,12 @@
 
   /* Botón principal de compra / WhatsApp con estética de boutique */
   .drea-btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-white bg-drea-burgundy hover:bg-drea-burgundy-deep transition-colors duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-white bg-drea-burgundy hover:bg-drea-burgundy-deep hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300;
   }
 
-  /* Botón secundario negro obsidiana */
+  /* Botón secundario negro obsidiana: al pasar el ratón se ilumina con el tono Borgoña Imperial */
   .drea-btn-dark {
-    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-drea-canvas bg-drea-ink hover:bg-drea-ink-charcoal transition-colors duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 text-xs uppercase tracking-editorial font-semibold text-drea-canvas bg-drea-ink hover:bg-drea-burgundy hover:text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300;
   }
 
   /* Texto con efecto dorado metálico del logo DREA */

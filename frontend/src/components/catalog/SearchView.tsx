@@ -6,6 +6,7 @@ import {
   Producto,
   VarianteProducto,
 } from '../../types/catalog';
+import { ProgressiveImage } from '../common/ProgressiveImage';
 
 interface SearchViewProps {
   initialQuery?: string;
@@ -213,10 +214,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                         </span>
                       )}
 
-                      <img
+                      <ProgressiveImage
                         src={prod.imagen.url}
                         alt={prod.nombre}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+                        className="group-hover:scale-105 transition-transform duration-500 ease-out"
                       />
                     </div>
 

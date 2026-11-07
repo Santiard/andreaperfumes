@@ -16,6 +16,7 @@ import {
   Producto,
   VarianteProducto,
 } from '../../types/catalog';
+import { ProgressiveImage } from '../common/ProgressiveImage';
 
 interface CatalogViewProps {
   filters: CatalogFiltersState;
@@ -1061,7 +1062,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onAddToCart(prod, selectedVar)}
-                            className="flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-drea-ink hover:text-drea-burgundy border border-drea-canvas-border hover:border-drea-burgundy bg-white transition-colors"
+                            className="flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-drea-ink hover:text-white border border-drea-canvas-border hover:border-drea-burgundy bg-white hover:bg-drea-burgundy transition-all duration-300 shadow-xs hover:shadow-md"
                           >
                             + Carrito
                           </button>
@@ -1072,7 +1073,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                               selectedVar &&
                               onDirectWhatsApp([{ variante_id: selectedVar.id, cantidad: 1 }])
                             }
-                            className="flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white bg-drea-burgundy hover:bg-drea-burgundy-dark transition-colors"
+                            className="flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white bg-drea-burgundy hover:bg-drea-burgundy-deep hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
                           >
                             Comprar
                           </button>
@@ -1203,7 +1204,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                           page: Math.max(1, currentPage - 1),
                         })
                       }
-                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:text-drea-burgundy disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:bg-drea-burgundy hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-300 shadow-xs hover:shadow-sm"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                       <span>Anterior</span>
@@ -1245,7 +1246,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                             className={`min-w-[36px] py-2 px-3 border text-xs font-semibold transition-colors ${
                               pageNum === currentPage
                                 ? 'bg-drea-burgundy text-white border-drea-burgundy'
-                                : 'bg-white text-drea-ink border-drea-canvas-border hover:border-drea-burgundy hover:text-drea-burgundy'
+                                : 'bg-white text-drea-ink border-drea-canvas-border hover:border-drea-burgundy hover:bg-drea-burgundy hover:text-white transition-all duration-200'
                             }`}
                           >
                             {pageNum}
@@ -1263,7 +1264,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                           page: Math.min(totalPages, currentPage + 1),
                         })
                       }
-                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:text-drea-burgundy disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                      className="inline-flex items-center gap-1 px-3.5 py-2 bg-white border border-drea-canvas-border text-xs uppercase tracking-wider font-semibold text-drea-ink hover:border-drea-burgundy hover:bg-drea-burgundy hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-300 shadow-xs hover:shadow-sm"
                     >
                       <span>Siguiente</span>
                       <ChevronRight className="w-3.5 h-3.5" />

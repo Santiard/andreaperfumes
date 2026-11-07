@@ -46,6 +46,7 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 # Caché de activos estáticos inmutables
 <IfModule mod_expires.c>
     ExpiresActive On
+    ExpiresByType video/mp4 "access plus 1 month"
     ExpiresByType image/webp "access plus 1 month"
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/jpeg "access plus 1 month"

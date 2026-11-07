@@ -93,18 +93,16 @@ export const Header: React.FC<HeaderProps> = ({
             setOpenDropdown(null);
             onNavigate({ view: 'home' });
           }}
-          className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none shrink-0"
+          className="flex items-center group focus:outline-none shrink-0"
+          aria-label="Ir al inicio - Drea Perfumes"
         >
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-sm border border-drea-gold/40 shrink-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-md border border-drea-gold/40 shrink-0">
             <img
               src={DREA_BRAND.assets.logo}
               alt={DREA_BRAND.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <span className="font-serif text-2xl sm:text-3xl tracking-wider font-semibold text-drea-ink leading-none">
-            DREA
-          </span>
         </button>
 
         {/* Navegación Principal Desktop */}

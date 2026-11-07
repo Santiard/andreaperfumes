@@ -18,6 +18,7 @@ import {
   Producto,
   VarianteProducto,
 } from '../../types/catalog';
+import { ProgressiveImage } from '../common/ProgressiveImage';
 
 interface ProductDetailViewProps {
   productoSlug: string;
@@ -381,7 +382,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                     type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     aria-label="Disminuir cantidad"
-                    className="w-9 h-9 flex items-center justify-center text-drea-ink hover:text-drea-burgundy transition-colors"
+                    className="w-9 h-9 flex items-center justify-center text-drea-ink hover:text-white hover:bg-drea-burgundy transition-all duration-200"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -392,7 +393,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                     type="button"
                     onClick={() => setQuantity((q) => q + 1)}
                     aria-label="Aumentar cantidad"
-                    className="w-9 h-9 flex items-center justify-center text-drea-ink hover:text-drea-burgundy transition-colors"
+                    className="w-9 h-9 flex items-center justify-center text-drea-ink hover:text-white hover:bg-drea-burgundy transition-all duration-200"
                   >
                     <Plus className="w-4 h-4" />
                   </button>

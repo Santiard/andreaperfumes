@@ -130,9 +130,10 @@ export interface CartItem {
 export interface BannerSlide {
   id: number;
   imageUrl: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
-  subtitle: string;
-  ctaLabel: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  position?: 'left' | 'right' | 'center';
   filterAction: Partial<CatalogFiltersState>;
 }
