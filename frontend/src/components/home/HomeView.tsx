@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowRight,
   Award,
@@ -36,6 +36,27 @@ function formatCop(value: number): string {
   return '$ ' + Math.round(value).toLocaleString('es-CO');
 }
 
+const REELS_DATA = [
+  {
+    id: 1,
+    src: '/assets/videos/reel1.mp4',
+    title: 'Reel Oficial DREA',
+    label: 'Chloé & Tendencias',
+  },
+  {
+    id: 2,
+    src: '/assets/videos/reel2.mp4',
+    title: 'Reel Oficial DREA',
+    label: 'Fragancias Virales',
+  },
+  {
+    id: 3,
+    src: '/assets/videos/reel3.mp4',
+    title: 'Reel Oficial DREA',
+    label: 'Colección & Reseñas',
+  },
+];
+
 export const HomeView: React.FC<HomeViewProps> = ({
   featuredProductos,
   loading,
@@ -48,6 +69,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const [selectedVariantByProd, setSelectedVariantByProd] = useState<Record<number, number>>({});
   const [loadedCategories, setLoadedCategories] = useState<Record<string, boolean>>({});
+  const [activeReelIdx, setActiveReelIdx] = useState(0);
+  const reelVideoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  useEffect(() => {
+    reelVideoRefs.current.forEach((vid, idx) => {
+      if (!vid) return;
+      if (idx === activeReelIdx) {
+        vid.play().catch(() => {});
+      } else {
+        vid.pause();
+      }
+    });
+  }, [activeReelIdx]);
+
+  const prevReel = () => {
+    setActiveReelIdx((prev) => (prev - 1 + REELS_DATA.length) % REELS_DATA.length);
+  };
+
+  const nextReel = () => {
+    setActiveReelIdx((prev) => (prev + 1) % REELS_DATA.length);
+  };
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
@@ -559,48 +601,128 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* COLUMNA 2: Reproductor de Reel en Formato Vertical (5 columnas) */}
-            <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end">
-              <a
-                href={DREA_BRAND.contact.instagramUrl}
-                target="_blank"
-                rel="noreferrer"
-                title="Ver Reel en Instagram (@perfumeshopcucuta)"
-                aria-label="Reproducir Reel en Instagram"
-                className="group relative block w-full max-w-[270px] sm:max-w-[290px] aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-b from-[#2B1921] to-[#141414] border border-white/20 hover:border-drea-gold/60 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(122,12,53,0.4)]"
-              >
-                {/* Video del Reel en Loop Silenciado */}
-                <video
-                  src="/assets/videos/reel.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+            {/* COLUMNA 2: Showcase de 3 Reels con Profundidad 3D (Central nítido + Laterales difuminados) */}
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-center justify-center">
+              <div className="relative w-full max-w-[340px] sm:max-w-[420px] flex flex-col items-center">
+                
+                {/* Contenedor del Escenario 3D Coverflow */}
+                <div className="relative w-full h-[430px] sm:h-[490px] flex items-center justify-center select-none">
+                  {REELS_DATA.map((reel, idx) => {
+                    const isCenter = idx === activeReelIdx;
+                    const isLeft = idx === (activeReelIdx - 1 + REELS_DATA.length) % REELS_DATA.length;
+                    const isRight = idx === (activeReelIdx + 1) % REELS_DATA.length;
 
-                {/* Badge Superior Izquierdo: Instagram Handle */}
-                <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white text-[11px] font-medium shadow-md">
-                  <Instagram className="w-3.5 h-3.5 text-drea-gold-light" />
-                  <span>{DREA_BRAND.contact.instagramHandle}</span>
+                    // Posicionamiento visual de cada Reel
+                    let positionClasses = 'z-0 scale-75 opacity-0 pointer-events-none';
+                    if (isCenter) {
+                      positionClasses = 'z-20 scale-100 opacity-100 translate-x-0 blur-none shadow-2xl border-white/30 hover:border-drea-gold/80';
+                    } else if (isLeft) {
+                      positionClasses = 'z-10 scale-[0.80] opacity-40 hover:opacity-75 -translate-x-[55px] sm:-translate-x-[78px] blur-[2px] hover:blur-none border-white/15';
+                    } else if (isRight) {
+                      positionClasses = 'z-10 scale-[0.80] opacity-40 hover:opacity-75 translate-x-[55px] sm:translate-x-[78px] blur-[2px] hover:blur-none border-white/15';
+                    }
+
+                    return (
+                      <div
+                        key={reel.id}
+                        onClick={() => {
+                          if (isCenter) {
+                            window.open(DREA_BRAND.contact.instagramUrl, '_blank', 'noopener,noreferrer');
+                          } else {
+                            setActiveReelIdx(idx);
+                          }
+                        }}
+                        title={isCenter ? 'Ver en Instagram (@perfumeshopcucuta)' : `Ver ${reel.label}`}
+                        className={`group absolute w-[215px] sm:w-[255px] aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-b from-[#2B1921] to-[#141414] border transition-all duration-500 ease-out cursor-pointer ${positionClasses}`}
+                      >
+                        {/* Video del Reel */}
+                        <video
+                          ref={(el) => (reelVideoRefs.current[idx] = el)}
+                          src={reel.src}
+                          loop
+                          muted
+                          playsInline
+                          autoPlay={isCenter}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+
+                        {/* Capa de difuminado y filtro oscuro sutil en los laterales */}
+                        {!isCenter && (
+                          <div className="absolute inset-0 bg-black/35 group-hover:bg-transparent transition-colors duration-300" />
+                        )}
+
+                        {/* Badges superiores e interactividad (Solo en el central activo) */}
+                        {isCenter && (
+                          <>
+                            <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-white text-[10px] sm:text-[11px] font-medium shadow-md">
+                              <Instagram className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-drea-gold-light" />
+                              <span>{DREA_BRAND.contact.instagramHandle}</span>
+                            </div>
+
+                            <div className="absolute top-3.5 right-3.5 z-20 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white shadow-md">
+                              <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-500 animate-pulse" />
+                            </div>
+
+                            {/* Overlay inferior con llamado a la acción */}
+                            <div className="absolute inset-x-0 bottom-0 z-20 p-3.5 sm:p-4 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col items-center gap-1.5 text-center">
+                              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/80 font-semibold drop-shadow-sm">
+                                {reel.label}
+                              </span>
+                              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-drea-burgundy/90 group-hover:bg-drea-burgundy text-white text-[10px] sm:text-[11px] font-bold tracking-wider uppercase rounded-full border border-white/30 transition-all duration-300 group-hover:scale-105 shadow-lg">
+                                <Instagram className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                <span>Ver en Instagram</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Flechas de Navegación del Carrusel */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevReel();
+                    }}
+                    aria-label="Reel anterior"
+                    className="absolute -left-2 sm:-left-4 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/75 hover:bg-drea-burgundy text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl"
+                  >
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextReel();
+                    }}
+                    aria-label="Reel siguiente"
+                    className="absolute -right-2 sm:-right-4 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/75 hover:bg-drea-burgundy text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl"
+                  >
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
                 </div>
 
-                {/* Badge Superior Derecho: Indicador de Reproducción Activa */}
-                <div className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white shadow-md">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                {/* Indicadores / Píldoras de Navegación Inferior */}
+                <div className="flex items-center gap-2 mt-3 z-30">
+                  {REELS_DATA.map((reel, i) => (
+                    <button
+                      key={reel.id}
+                      type="button"
+                      onClick={() => setActiveReelIdx(i)}
+                      aria-label={`Ir a Reel ${i + 1}`}
+                      className={`h-1.5 transition-all duration-300 rounded-full ${
+                        i === activeReelIdx
+                          ? 'w-7 bg-drea-gold shadow-xs'
+                          : 'w-2 bg-white/30 hover:bg-white/60'
+                      }`}
+                    />
+                  ))}
                 </div>
 
-                {/* Overlay Inferior: Gradiente y Botón Flotante para ir a Instagram */}
-                <div className="absolute inset-x-0 bottom-0 z-20 p-5 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col items-center gap-2 text-center">
-                  <span className="text-[10px] uppercase tracking-[0.22em] text-white/80 font-semibold drop-shadow-sm">
-                    Reel Oficial DREA
-                  </span>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-drea-burgundy/90 group-hover:bg-drea-burgundy text-white text-[11px] font-bold tracking-wider uppercase rounded-full border border-white/30 transition-all duration-300 group-hover:scale-105 shadow-lg">
-                    <Instagram className="w-3.5 h-3.5" />
-                    <span>Ver en Instagram</span>
-                  </div>
-                </div>
-              </a>
+              </div>
             </div>
 
           </div>
