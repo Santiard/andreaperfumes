@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   ChevronDown,
   ChevronLeft,
@@ -761,21 +761,18 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         <section className="relative bg-drea-ink text-white overflow-hidden">
           {/* Imagen sutil de fondo con degradado oscuro luxury */}
           <div
-            className="absolute inset-0 opacity-30 bg-cover bg-center"
-            style={{ backgroundImage: "url('/assets/banners/imagen2.webp')" }}
+            className="absolute inset-0 opacity-40 bg-cover bg-center scale-105 transition-all duration-700"
+            style={{ backgroundImage: "url('/assets/banners/catalogo-banner.webp')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/65 to-black/75" />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-20 text-center">
-            <span className="inline-block text-[10px] uppercase tracking-[0.28em] text-drea-gold mb-2">
-              DREA PERFUMES · BOUTIQUE ARCHIVE
-            </span>
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal tracking-wide text-white uppercase">
               {filters.tituloSeccion ?? 'Catálogo'}
             </h1>
             <p className="mt-3 max-w-2xl mx-auto text-xs sm:text-sm text-white/80 font-light leading-relaxed italic font-serif">
               {filters.subtituloSeccion ??
-                'Una curaduría de alta perfumería árabe, de diseñador y de autor concebida para evocar carácter, memoria y sofisticación.'}
+                'Selección exclusiva de perfumes originales concebida para evocar carácter, elegancia y sofisticación.'}
             </p>
           </div>
         </section>

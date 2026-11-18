@@ -173,14 +173,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-12">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8 border-b border-drea-canvas-border pb-5">
           <div>
-            <span className="drea-eyebrow text-drea-burgundy">
-              CURADURÍA DE LA BOUTIQUE · SELECCIÓN DREA
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-drea-ink mt-1">
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-drea-ink">
               Fragancias Seleccionadas
             </h2>
             <p className="text-xs sm:text-sm text-drea-ink-muted mt-1">
-              Nuestra selección exclusiva de perfumes destacados del momento. Desliza para explorar.
+              Nuestra selección exclusiva para ti.
             </p>
           </div>
 
