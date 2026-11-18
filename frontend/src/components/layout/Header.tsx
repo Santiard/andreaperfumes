@@ -433,21 +433,6 @@ export const Header: React.FC<HeaderProps> = ({
                 setMobileMenuOpen(false);
                 onNavigate({
                   view: 'catalogo',
-                  tituloSeccion: 'Todos los Perfumes',
-                  tipo_presentacion: 'Regular',
-                });
-              }}
-              className="text-left py-3 hover:text-drea-burgundy transition-colors"
-            >
-              Todos los perfumes
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onNavigate({
-                  view: 'catalogo',
                   tituloSeccion: 'Catálogo Completo',
                 });
               }}
