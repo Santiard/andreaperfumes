@@ -505,7 +505,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
 
               <p className="text-sm sm:text-base text-drea-ink-muted leading-relaxed font-light">
-                En <strong className="font-semibold text-drea-ink">DREA PERFUMES</strong> cada pieza es 100% original, garantizada y seleccionada para reflejar tu personalidad, carácter y sofisticación.
+                En Drea Perfumes cada pieza es 100% original, garantizada y seleccionada para reflejar tu personalidad, carácter y sofisticación.
               </p>
 
               <p className="text-sm sm:text-base text-drea-ink-muted leading-relaxed font-light">
