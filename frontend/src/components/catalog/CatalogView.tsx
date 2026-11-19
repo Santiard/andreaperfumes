@@ -761,16 +761,16 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         <section className="relative bg-drea-ink text-white overflow-hidden">
           {/* Imagen sutil de fondo con degradado oscuro luxury */}
           <div
-            className="absolute inset-0 opacity-40 bg-cover bg-center scale-105 transition-all duration-700"
+            className="absolute inset-0 opacity-80 bg-cover bg-center scale-105 transition-all duration-700"
             style={{ backgroundImage: "url('/assets/banners/catalogo-banner.webp')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/65 to-black/75" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/50" />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-20 text-center">
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal tracking-wide text-white uppercase">
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal tracking-wide text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
               {filters.tituloSeccion ?? 'Catálogo'}
             </h1>
-            <p className="mt-3 max-w-2xl mx-auto text-xs sm:text-sm text-white/80 font-light leading-relaxed italic font-serif">
+            <p className="mt-3 max-w-2xl mx-auto text-xs sm:text-sm text-white font-normal leading-relaxed italic font-serif drop-shadow-[0_1px_6px_rgba(0,0,0,0.85)]">
               {filters.subtituloSeccion ??
                 'Selección exclusiva de perfumes originales concebida para evocar carácter, elegancia y sofisticación.'}
             </p>
