@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Search,
   ShoppingBag,
@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-drea-gold-light font-semibold">PERFUMERÍA ORIGINAL</span>
             <span className="hidden md:inline text-white/40">|</span>
             <span className="hidden md:inline text-white/90">
-              Visita nuestro Showroom en Cúcuta 📍 · Horario de atención 8am-8pm
+              Visita nuestro Showroom en Cúcuta · Horario de atención 8am-8pm
             </span>
           </div>
 

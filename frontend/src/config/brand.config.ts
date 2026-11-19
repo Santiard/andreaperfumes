@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * CONFIGURACIÓN CENTRAL DE IDENTIDAD DE MARCA — DREA PERFUMES
  * ============================================================================
@@ -26,7 +26,7 @@ export const DREA_BRAND = {
 
   contact: {
     headline: 'PERFUMERÍA ORIGINAL',
-    showroom: 'Visita nuestro Showroom en Cúcuta 📍',
+    showroom: 'Visita nuestro Showroom en Cúcuta',
     schedule: 'Horario de atención 8am-8pm',
     advisory: 'Te brindamos asesoría personalizada',
     whatsappNumber: '573207683734',

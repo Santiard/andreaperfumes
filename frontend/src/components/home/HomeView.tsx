@@ -500,8 +500,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   EXPERIENCIA &amp; AUTENTICIDAD
                 </span>
                 <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-drea-ink mt-2 leading-tight">
-                  El arte de elegir tu <br className="hidden sm:inline" />
-                  <span className="italic font-normal">fragancia ideal</span>
+                  El arte de elegir tu fragancia ideal
                 </h2>
               </div>
 
@@ -513,32 +512,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 ¿Buscas un perfume para una ocasión especial, un regalo inolvidable o tu firma olfativa diaria? Te brindamos asesoría personalizada directa para guiarte entre las mejores casas árabes y de diseñador.
               </p>
 
-              {/* Puntos destacados de confianza */}
+              {/* Puntos destacados de confianza con iconografía minimalista de alta gama */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
-                  <span className="text-base">✨</span>
-                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                <div className="p-4 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <ShieldCheck className="w-5 h-5 text-drea-gold" strokeWidth={1.5} />
+                  <p className="text-xs font-semibold text-drea-ink mt-2 uppercase tracking-wider font-sans">
                     100% Originales
                   </p>
-                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5 font-sans">
                     Garantía de autenticidad
                   </p>
                 </div>
-                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
-                  <span className="text-base">💬</span>
-                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                <div className="p-4 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <MessageCircle className="w-5 h-5 text-drea-gold" strokeWidth={1.5} />
+                  <p className="text-xs font-semibold text-drea-ink mt-2 uppercase tracking-wider font-sans">
                     Asesoría Experta
                   </p>
-                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5 font-sans">
                     Atención personalizada
                   </p>
                 </div>
-                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
-                  <span className="text-base">📦</span>
-                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                <div className="p-4 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <Truck className="w-5 h-5 text-drea-gold" strokeWidth={1.5} />
+                  <p className="text-xs font-semibold text-drea-ink mt-2 uppercase tracking-wider font-sans">
                     Envíos Seguros
                   </p>
-                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5 font-sans">
                     Rápidos a todo el país
                   </p>
                 </div>
