@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowRight,
   Award,
@@ -470,7 +470,108 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =====================================================================
-          3. INFORMACIÓN DE LA MARCA, SHOWROOM, HORARIO Y REDES SOCIALES
+          3. SECCIÓN EDITORIAL: EXPERIENCIA & ASESORÍA PERSONALIZADA (DREA)
+      ===================================================================== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="bg-gradient-to-br from-white via-[#FAF7F2] to-white border border-drea-canvas-border shadow-editorial p-6 sm:p-10 lg:p-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+            {/* Foto Editorial Vertical de la Fundadora */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative w-full max-w-sm sm:max-w-md aspect-[2/3] overflow-hidden rounded-sm border-2 border-drea-gold/40 shadow-luxury group">
+                <img
+                  src="/assets/brand/drea-editorial.webp"
+                  alt="Drea Perfumes - Alta Perfumería Original"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                {/* Marco interior dorado decorativo */}
+                <div className="absolute inset-3 border border-drea-gold/30 pointer-events-none rounded-xs" />
+                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-white/20 py-2 px-3 text-center">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-drea-gold-light font-medium">
+                    Showroom Oficial · Cúcuta
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Columna de Texto Editorial & Asesoría Directa */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              <div>
+                <span className="drea-eyebrow text-drea-burgundy">
+                  EXPERIENCIA &amp; AUTENTICIDAD
+                </span>
+                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-drea-ink mt-2 leading-tight">
+                  El arte de elegir tu <br className="hidden sm:inline" />
+                  <span className="italic font-normal">fragancia ideal</span>
+                </h2>
+              </div>
+
+              <p className="text-sm sm:text-base text-drea-ink-muted leading-relaxed font-light">
+                En <strong className="font-semibold text-drea-ink">DREA PERFUMES</strong> cada pieza es 100% original, garantizada y seleccionada para reflejar tu personalidad, carácter y sofisticación.
+              </p>
+
+              <p className="text-sm sm:text-base text-drea-ink-muted leading-relaxed font-light">
+                ¿Buscas un perfume para una ocasión especial, un regalo inolvidable o tu firma olfativa diaria? Te brindamos asesoría personalizada directa para guiarte entre las mejores casas árabes y de diseñador.
+              </p>
+
+              {/* Puntos destacados de confianza */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <span className="text-base">✨</span>
+                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                    100% Originales
+                  </p>
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                    Garantía de autenticidad
+                  </p>
+                </div>
+                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <span className="text-base">💬</span>
+                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                    Asesoría Experta
+                  </p>
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                    Atención personalizada
+                  </p>
+                </div>
+                <div className="p-3.5 bg-drea-canvas-surface border border-drea-canvas-border rounded-sm">
+                  <span className="text-base">📦</span>
+                  <p className="text-xs font-semibold text-drea-ink mt-1.5 uppercase tracking-wider">
+                    Envíos Seguros
+                  </p>
+                  <p className="text-[11px] text-drea-ink-muted mt-0.5">
+                    Rápidos a todo el país
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón WhatsApp de Asesoría */}
+              <div className="pt-2 flex flex-wrap items-center gap-4">
+                <a
+                  href={DREA_BRAND.contact.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-7 py-3.5 bg-drea-burgundy text-white hover:bg-drea-burgundy-dark font-medium text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4 text-drea-gold-light" />
+                  <span>Pedir Asesoría por WhatsApp</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigateCatalog({ view: 'catalogo', tituloSeccion: 'Catálogo Completo' })}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 border border-drea-ink/20 hover:border-drea-burgundy hover:text-drea-burgundy text-drea-ink font-medium text-xs sm:text-sm uppercase tracking-wider transition-colors"
+                >
+                  <span>Explorar Colección</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          4. INFORMACIÓN DE LA MARCA, SHOWROOM, HORARIO Y REDES SOCIALES
       ===================================================================== */}
       <section className="bg-drea-ink text-white border-t border-white/15">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-20 space-y-12">
