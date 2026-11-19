@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 2. CABECERA PRINCIPAL: Logo + Menú de Categorías con Dropdowns + Buscador y Carrito */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-8 h-20 flex items-center justify-between gap-2 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 h-20 sm:h-22 flex items-center justify-between gap-2 sm:gap-6">
         {/* Botón Menú Móvil */}
         <button
           type="button"
@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center group focus:outline-none shrink-0"
           aria-label="Ir al inicio - Drea Perfumes"
         >
-          <div className="h-12 sm:h-14 md:h-16 w-auto max-w-[170px] sm:max-w-[220px] rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-md border border-drea-gold/40 shrink-0">
+          <div className="h-[54px] sm:h-[62px] md:h-[68px] w-auto max-w-[220px] sm:max-w-[280px] rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-md border border-drea-gold/40 shrink-0">
             <img
               src={DREA_BRAND.assets.logo}
               alt={DREA_BRAND.name}
