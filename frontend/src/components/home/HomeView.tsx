@@ -482,11 +482,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {/* Identidad de Marca & Showroom */}
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-4">
-                  <div className="w-16 h-16 sm:w-[70px] sm:h-[70px] rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-drea-gold/40 shadow-lg shrink-0">
+                  <div className="h-14 sm:h-16 w-auto rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center border border-drea-gold/40 shadow-lg shrink-0">
                     <img
                       src={DREA_BRAND.assets.logo}
                       alt={DREA_BRAND.name}
-                      className="w-full h-full object-cover"
+                      className="h-full w-auto object-contain"
                     />
                   </div>
                   <div className="text-left">

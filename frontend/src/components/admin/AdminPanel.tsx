@@ -691,11 +691,11 @@ export const AdminPanel: React.FC = () => {
       <div className="min-h-screen bg-drea-ink flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-white border border-drea-gold/40 shadow-2xl p-8 sm:p-10">
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-16 h-16 bg-drea-burgundy border border-drea-gold p-1 mb-4">
+            <div className="h-16 w-auto max-w-[200px] bg-drea-burgundy border border-drea-gold p-1 mb-4 flex items-center justify-center rounded-sm">
               <img
                 src={DREA_BRAND.assets.logo}
                 alt="DREA PERFUMES"
-                className="w-full h-full object-cover"
+                className="h-full w-auto object-contain"
               />
             </div>
             <span className="text-[10px] uppercase tracking-editorial text-drea-burgundy font-semibold">
@@ -776,11 +776,11 @@ export const AdminPanel: React.FC = () => {
       <header className="bg-drea-ink text-white border-b border-drea-gold/30 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-drea-burgundy border border-drea-gold/60 overflow-hidden">
+            <div className="h-11 w-auto max-w-[130px] bg-drea-burgundy border border-drea-gold/60 overflow-hidden flex items-center justify-center rounded-sm">
               <img
                 src={DREA_BRAND.assets.logo}
                 alt="DREA"
-                className="w-full h-full object-cover"
+                className="h-full w-auto object-contain"
               />
             </div>
             <div>

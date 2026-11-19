@@ -96,11 +96,11 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center group focus:outline-none shrink-0"
           aria-label="Ir al inicio - Drea Perfumes"
         >
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-md border border-drea-gold/40 shrink-0">
+          <div className="h-12 sm:h-14 md:h-16 w-auto max-w-[170px] sm:max-w-[220px] rounded-sm overflow-hidden bg-drea-burgundy flex items-center justify-center shadow-md border border-drea-gold/40 shrink-0">
             <img
               src={DREA_BRAND.assets.logo}
               alt={DREA_BRAND.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="h-full w-auto object-contain group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         </button>
